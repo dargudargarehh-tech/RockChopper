@@ -1,0 +1,649 @@
+#rock-chopper-game,
+#rock-chopper-game * {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+#rock-chopper-game {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* Fixes mobile browser address-bar cutoff */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  z-index: 2147483647;
+  background: #141e18;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: "Courier New", Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+}
+
+/* Ensure emojis always render in full vibrant color */
+#rock-chopper-game .emoji-color {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  -webkit-text-fill-color: initial !important;
+  color: initial !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* TITLE SCREEN */
+#rock-chopper-game #titleScreen {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: #070a10;
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+#rock-chopper-game #titleScreen * {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+#rock-chopper-game #titleScreen.hidden {
+  display: none;
+}
+
+#rock-chopper-game #titleBgImg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+#rock-chopper-game .title-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(circle at 50% 35%, rgba(8, 11, 18, 0.35) 0%, rgba(7, 10, 16, 0.88) 100%);
+  pointer-events: none;
+}
+
+#rock-chopper-game .title-content {
+  position: relative;
+  z-index: 2;
+  margin: auto; /* Centers vertically without clipping top overflow when scrolling */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+#rock-chopper-game .title-badge {
+  background: rgba(217, 119, 6, 0.25);
+  border: 1px solid #d97706;
+  color: #fbbf24;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  backdrop-filter: blur(4px);
+}
+
+#rock-chopper-game .hero-logo {
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  margin: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.95));
+}
+
+#rock-chopper-game .hero-logo-text {
+  background: linear-gradient(180deg, #fde68a 0%, #f59e0b 55%, #b45309 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+#rock-chopper-game .title-sub {
+  color: #e2e8f0;
+  font-size: 15px;
+  margin: 8px 0 24px;
+  text-align: center;
+  max-width: 620px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+#rock-chopper-game .char-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(210px, 290px));
+  gap: 16px;
+  width: 100%;
+  max-width: 920px;
+  margin-bottom: 24px;
+}
+
+#rock-chopper-game .char-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+  border: 2px solid #293752;
+  border-radius: 16px;
+  padding: 18px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#rock-chopper-game .char-card:hover {
+  transform: translateY(-4px);
+  border-color: #d97706;
+}
+
+#rock-chopper-game .char-card.selected {
+  border-color: #fbbf24;
+  background: linear-gradient(180deg, rgba(30, 43, 69, 0.95) 0%, rgba(20, 30, 51, 0.95) 100%);
+  box-shadow: 0 0 28px rgba(245, 158, 11, 0.4);
+}
+
+#rock-chopper-game .char-avatar {
+  font-size: 52px;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+#rock-chopper-game .char-name {
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+#rock-chopper-game .char-role {
+  font-size: 12px;
+  font-weight: 800;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+#rock-chopper-game .char-stats {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #26344d;
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+#rock-chopper-game .start-btn {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
+  border: none;
+  border-radius: 14px;
+  padding: 15px 44px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #92400e, 0 14px 30px rgba(245, 158, 11, 0.4);
+  transition: transform 0.1s;
+}
+
+#rock-chopper-game .start-btn:hover {
+  filter: brightness(1.08);
+}
+
+#rock-chopper-game .start-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #92400e;
+}
+
+/* =========================================================
+   RETRO PIXEL STYLE GAME LAYOUT (IN-GAME UI)
+   ========================================================= */
+#rock-chopper-game .top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #17211b;
+  border-bottom: 4px solid #3f5747;
+  flex-shrink: 0;
+}
+
+#rock-chopper-game .brand-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#rock-chopper-game .game-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 2px 2px 0 #000000;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 1px;
+}
+
+#rock-chopper-game .toolbar-tabs {
+  display: flex;
+  gap: 6px;
+  background: #0d1410;
+  padding: 4px;
+  border: 3px solid #384d3f;
+}
+
+#rock-chopper-game .tab-btn {
+  background: #1a261f;
+  color: #cbd5e1;
+  border: 2px solid #2e4034;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: inset -2px -2px 0 #0b100d, inset 2px 2px 0 #34493b;
+}
+
+#rock-chopper-game .tab-btn:hover {
+  color: #ffffff;
+  background: #24342b;
+}
+
+#rock-chopper-game .tab-btn.active {
+  background: #d97706;
+  color: #090d0a;
+  border-color: #fde68a;
+  box-shadow: inset -2px -2px 0 #92400e, inset 2px 2px 0 #fcd34d;
+}
+
+#rock-chopper-game .hud-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+#rock-chopper-game .pill {
+  background: #0f1712;
+  border: 2px solid #3d5445;
+  box-shadow: 2px 2px 0 #060907;
+  padding: 4px 10px;
+  color: #e2e8f0;
+}
+
+#rock-chopper-game .pill.gold { color: #fbbf24; border-color: #b45309; }
+#rock-chopper-game .pill.hp { color: #f87171; border-color: #991b1b; }
+#rock-chopper-game .pill.xp { color: #38bdf8; border-color: #0369a1; }
+
+#rock-chopper-game .top-btn {
+  background: #24332a;
+  color: #ffffff;
+  border: 2px solid #4a6352;
+  box-shadow: 2px 2px 0 #070a08;
+  padding: 5px 10px;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#rock-chopper-game .top-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* MAIN PIXEL WORKSPACE */
+#rock-chopper-game .main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+#rock-chopper-game .center-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #284728;
+  overflow: hidden;
+}
+
+#rock-chopper-game .tab-panel {
+  display: none;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  position: relative;
+}
+
+#rock-chopper-game .tab-panel.active {
+  display: flex;
+}
+
+#rock-chopper-game canvas#mineCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  cursor: crosshair;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+#rock-chopper-game .controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #141c17;
+  border-top: 3px solid #384d3f;
+  font-size: 12px;
+  color: #cbd5e1;
+  flex-shrink: 0;
+}
+
+/* TOUCH CONTROLS OVERLAY (PHONES & TABLETS) */
+#rock-chopper-game .touch-controls {
+  position: absolute;
+  inset: 0 0 44px 0;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 16px 20px;
+  z-index: 15;
+}
+
+#rock-chopper-game .touch-controls.hidden {
+  display: none;
+}
+
+#rock-chopper-game .dpad {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-rows: repeat(3, 50px);
+  gap: 4px;
+  opacity: 0.9;
+}
+
+#rock-chopper-game .dpad-btn {
+  background: rgba(20, 29, 24, 0.9);
+  border: 3px solid #577360;
+  box-shadow: 3px 3px 0 #070a08;
+  color: #fde68a;
+  font-size: 20px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#rock-chopper-game .dpad-btn:active,
+#rock-chopper-game .dpad-btn.pressed {
+  background: #d97706;
+  color: #090d0a;
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+#rock-chopper-game .touch-actions {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  opacity: 0.95;
+}
+
+#rock-chopper-game .chop-touch-btn {
+  width: 84px;
+  height: 84px;
+  background: #d97706;
+  border: 4px solid #fde68a;
+  box-shadow: inset -4px -4px 0 #92400e, 4px 4px 0 #070a08;
+  color: #090d0a;
+  font-weight: 900;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#rock-chopper-game .chop-touch-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+  background: #f59e0b;
+}
+
+/* NPC DIALOGUE & SHOP PANELS (HUDSON & PHIL) */
+#rock-chopper-game .npc-screen {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  background: repeating-linear-gradient(
+    0deg,
+    #16211a,
+    #16211a 16px,
+    #131d17 16px,
+    #131d17 32px
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#rock-chopper-game .npc-card-wrap {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#rock-chopper-game .npc-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #1b2820;
+  border: 4px solid #4a6352;
+  box-shadow: 4px 4px 0 #080c09;
+  padding: 16px;
+}
+
+#rock-chopper-game .npc-portrait {
+  font-size: 56px;
+  background: #0e1511;
+  border: 3px solid #d97706;
+  width: 86px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#rock-chopper-game .npc-speech {
+  background: #0c120e;
+  border-left: 4px solid #f59e0b;
+  border-top: 2px solid #2b3a30;
+  border-right: 2px solid #2b3a30;
+  border-bottom: 2px solid #2b3a30;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #f3f4f6;
+  line-height: 1.45;
+  margin-top: 8px;
+}
+
+#rock-chopper-game .shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: 12px;
+}
+
+#rock-chopper-game .shop-item {
+  background: #1b2820;
+  border: 3px solid #3f5747;
+  box-shadow: 4px 4px 0 #080c09;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#rock-chopper-game .tip-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#rock-chopper-game .topic-btn {
+  background: #223429;
+  color: #fde68a;
+  border: 3px solid #496654;
+  box-shadow: 3px 3px 0 #080c09;
+  padding: 8px 14px;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#rock-chopper-game .topic-btn:hover {
+  border-color: #f59e0b;
+  background: #2b4234;
+}
+
+/* RIGHT SIDEBAR */
+#rock-chopper-game .side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  background: #151f19;
+  border-left: 4px solid #384d3f;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#rock-chopper-game .inv-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: #0c120e;
+  padding: 8px 4px;
+  border: 3px solid #34493b;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+#rock-chopper-game .rarity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+#rock-chopper-game .rarity-tag {
+  padding: 2px 6px;
+  background: #0c120e;
+  border: 2px solid currentColor;
+  text-transform: uppercase;
+}
+
+#rock-chopper-game .mini-btn {
+  background: #d97706;
+  color: #ffffff;
+  border: 2px solid #fde68a;
+  box-shadow: inset -2px -2px 0 #92400e, 3px 3px 0 #070a08;
+  padding: 8px 10px;
+  font-weight: 900;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#rock-chopper-game .mini-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+#rock-chopper-game .mini-btn.secondary {
+  background: #2563eb;
+  border-color: #93c5fd;
+  box-shadow: inset -2px -2px 0 #1e3a8a, 3px 3px 0 #070a08;
+}
+
+#rock-chopper-game .mini-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#rock-chopper-game .combat-log {
+  flex: 1;
+  min-height: 95px;
+  font-size: 11px;
+  color: #cbd5e1;
+  background: #0c120e;
+  border: 3px solid #34493b;
+  padding: 8px;
+  overflow-y: auto;
+  line-height: 1.45;
+}
+
+@media (max-width: 850px) {
+  #rock-chopper-game .char-grid {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+  }
+  #rock-chopper-game .main-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(240px, 1fr) 190px;
+  }
+  #rock-chopper-game .side-stack {
+    border-left: none;
+    border-top: 4px solid #384d3f;
+  }
+  #rock-chopper-game .npc-header {
+    flex-direction: column;
+    text-align: center;
+  }
+}

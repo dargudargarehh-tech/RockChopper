@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Rock Chopper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body style="margin:0; background:#070a10;">
+  <div id="rock-chopper-game">
+    <!-- TITLE SCREEN -->
+    <div id="titleScreen">
+      <img id="titleBgImg" src="https://i.postimg.cc/fL1Xsmg1/Rock-Chopper-Crystal-Mining-Adventure.png" alt="Rock Chopper Crystal Mining Adventure" />
+      <div class="title-vignette"></div>
+
+      <div class="title-content">
+        <div class="title-badge">Surface Quarry Expedition RPG</div>
+        <h1 class="hero-logo">
+          <span class="emoji-color">⛏️</span>
+          <span class="hero-logo-text">ROCK CHOPPER</span>
+        </h1>
+        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, forge new pickaxe materials with Hudson, and get insider tips from Prospector Phil.</p>
+
+        <div class="char-grid">
+          <div class="char-card selected" data-char="neil">
+            <div class="char-avatar emoji-color">🧒🏽</div>
+            <div class="char-name">Neil</div>
+            <div class="char-role">All-Rounder</div>
+            <div class="char-stats">
+              <span class="emoji-color">❤️</span> 110 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 6 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Normal<br>
+              <b>Perk:</b> +30% Gold &amp; extra ore drops from rare rocks
+            </div>
+          </div>
+
+          <div class="char-card" data-char="xavier">
+            <div class="char-avatar emoji-color">🧑🏾‍🎤</div>
+            <div class="char-name">Xavier</div>
+            <div class="char-role">Heavy Crusher</div>
+            <div class="char-stats">
+              <span class="emoji-color">❤️</span> 145 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 9 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Steady<br>
+              <b>Perk:</b> Crushes Galactic, Glitched &amp; Apex boulders faster
+            </div>
+          </div>
+
+          <div class="char-card" data-char="carter">
+            <div class="char-avatar emoji-color">👱🏻‍♂️</div>
+            <div class="char-name">Carter</div>
+            <div class="char-role">Trailblazer Scout</div>
+            <div class="char-stats">
+              <span class="emoji-color">❤️</span> 95 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 6 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Fast<br>
+              <b>Perk:</b> +35% Move Speed across the quarry grounds
+            </div>
+          </div>
+        </div>
+
+        <button class="start-btn" id="startGameBtn"><span class="emoji-color">▶</span> ENTER THE QUARRY</button>
+      </div>
+    </div>
+
+    <!-- PIXEL HUD & TOOLBAR -->
+    <div class="top-bar">
+      <div class="brand-group">
+        <h1 class="game-title">
+          <span class="emoji-color">⛏️</span>
+          <span>ROCK CHOPPER</span>
+          <span id="activeMinerBadge" style="font-size:11px; background:#24332a; border:2px solid #4a6352; color:#e2e8f0; padding:2px 8px;"><span class="emoji-color">🧒🏽</span> Neil</span>
+        </h1>
+
+        <div class="toolbar-tabs">
+          <button class="tab-btn active" data-tab="quarryTab"><span class="emoji-color">⛏️</span> Quarry</button>
+          <button class="tab-btn" data-tab="hudsonTab"><span class="emoji-color">🏪</span> Hudson's Shop</button>
+          <button class="tab-btn" data-tab="philTab"><span class="emoji-color">🕵️‍♂️</span> Prospector Phil</button>
+        </div>
+      </div>
+
+      <div class="hud-pills">
+        <div class="pill xp"><span class="emoji-color">⭐</span> LV.<span id="rpgLevel">1</span> (<span id="rpgXp">0</span>/<span id="rpgNextXp">30</span>)</div>
+        <div class="pill hp"><span class="emoji-color">❤️</span> <span id="hpText">110/110</span></div>
+        <div class="pill gold"><span class="emoji-color">💰</span> <span id="goldText">0</span>G</div>
+        <div class="pill"><span class="emoji-color">⛰️</span> ZONE <span id="floorText">1</span></div>
+        <button class="top-btn" id="toggleTouchBtn"><span class="emoji-color">📱</span> Touch: ON</button>
+        <button class="top-btn" id="switchCharBtn"><span class="emoji-color">👤</span> Miner</button>
+      </div>
+    </div>
+
+    <!-- MAIN PIXEL WORKSPACE -->
+    <div class="main-layout">
+      <div class="center-stage">
+        <!-- TAB 1: PIXEL SURFACE QUARRY -->
+        <div id="quarryTab" class="tab-panel active">
+          <canvas id="mineCanvas"></canvas>
+
+          <!-- ON-SCREEN TOUCH CONTROLS FOR PHONES & TABLETS -->
+          <div class="touch-controls" id="touchControls">
+            <div class="dpad">
+              <div></div>
+              <button class="dpad-btn" data-dir="up">▲</button>
+              <div></div>
+              <button class="dpad-btn" data-dir="left">◀</button>
+              <div style="background:rgba(15,23,18,0.6); border:2px solid #384d3f;"></div>
+              <button class="dpad-btn" data-dir="right">▶</button>
+              <div></div>
+              <button class="dpad-btn" data-dir="down">▼</button>
+              <div></div>
+            </div>
+
+            <div class="touch-actions">
+              <button class="chop-touch-btn" id="touchChopBtn">
+                <span class="emoji-color" style="font-size:28px;">⛏️</span>
+                <span>CHOP</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-bar">
+            <span>Move: <b>WASD / Arrows / D-Pad</b> • Chop: <b>Space / Click / CHOP</b> • Find <span class="emoji-color">🪜</span> <b>Gate</b></span>
+            <div style="display:flex; gap:6px;">
+              <button class="mini-btn" id="newFloorBtn"><span class="emoji-color">🔄</span> New Quarry</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: HUDSON'S SHOP (PICKAXE MATERIALS & GEAR) -->
+        <div id="hudsonTab" class="tab-panel">
+          <div class="npc-screen">
+            <div class="npc-card-wrap">
+              <div class="npc-header">
+                <div class="npc-portrait emoji-color">🧑‍💼</div>
+                <div>
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">HUDSON — QUARRY OUTFITTER</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PICKAXE FORGE &amp; GENERAL STORE</div>
+                  <div class="npc-speech" id="hudsonSpeech">"Welcome to my pixel outpost! Bring me your ores and I'll forge your pickaxe from Wood all the way up to Apex material!"</div>
+                </div>
+              </div>
+
+              <div class="shop-grid">
+                <div class="shop-item">
+                  <div>
+                    <div style="font-weight:900; font-size:15px; color:#fbbf24;"><span class="emoji-color">💰</span> SELL SATCHEL ORES</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Trade all Stone, Iron, and Rare Gems for instant Gold.</div>
+                  </div>
+                  <button class="mini-btn" id="hudsonSellBtn">SELL ALL (<span id="sellValuePreview">0</span>G)</button>
+                </div>
+
+                <div class="shop-item">
+                  <div>
+                    <div style="font-weight:900; font-size:15px; color:#38bdf8;"><span class="emoji-color">⛏️</span> FORGE NEXT PICKAXE</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">
+                      Current: <b id="shopCurPick" style="color:#fde68a;">Wood Pickaxe</b><br>
+                      Next: <b id="shopNextPick" style="color:#4ade80;">Stone Pickaxe (+4 ATK)</b>
+                    </div>
+                  </div>
+                  <button class="mini-btn" id="upgPick">FORGE (<span id="pickCost">20</span>G)</button>
+                </div>
+
+                <div class="shop-item">
+                  <div>
+                    <div style="font-weight:900; font-size:15px; color:#4ade80;"><span class="emoji-color">🦺</span> REINFORCED FIELD VEST</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Adds <b>+25 Max HP</b> to survive fierce quarry critters.</div>
+                  </div>
+                  <button class="mini-btn" id="upgArmor">BUY VEST (<span id="armorCost">25</span>G)</button>
+                </div>
+
+                <div class="shop-item">
+                  <div>
+                    <div style="font-weight:900; font-size:15px; color:#f472b6;"><span class="emoji-color">🥾</span> TRAIL RUNNER BOOTS</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Increases movement speed across the quarry.</div>
+                  </div>
+                  <button class="mini-btn" id="upgBoots">UPGRADE (<span id="bootsCost">30</span>G)</button>
+                </div>
+
+                <div class="shop-item">
+                  <div>
+                    <div style="font-weight:900; font-size:15px; color:#f87171;"><span class="emoji-color">🧪</span> FIELD MED-TONIC</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Restores <b>+60 HP</b> immediately.</div>
+                  </div>
+                  <button class="mini-btn secondary" id="healBtn">DRINK (15G)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: PROSPECTOR PHIL -->
+        <div id="philTab" class="tab-panel">
+          <div class="npc-screen">
+            <div class="npc-card-wrap">
+              <div class="npc-header">
+                <div class="npc-portrait emoji-color">🕵️‍♂️</div>
+                <div>
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — VETERAN ROCKHOUND</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">RARITY &amp; MATERIAL EXPERT</div>
+                  <div class="npc-speech" id="philSpeech">"Howdy, partner! I've been tracking all 11 rock rarities out here—including Secret, Divine, Galactic, Glitched, and Apex Purple! Pick a topic below."</div>
+                </div>
+              </div>
+
+              <div class="tip-topics">
+                <button class="topic-btn" data-topic="rarities"><span class="emoji-color">🔍</span> All 11 Rarity Tiers</button>
+                <button class="topic-btn" data-topic="materials"><span class="emoji-color">⛏️</span> Pickaxe Materials</button>
+                <button class="topic-btn" data-topic="zones"><span class="emoji-color">🗺️</span> Advancing Zones</button>
+                <button class="topic-btn" data-topic="crew"><span class="emoji-color">🕵️</span> Neil, Xavier &amp; Carter</button>
+                <button class="topic-btn" data-topic="random"><span class="emoji-color">📁</span> Field Note Tip</button>
+              </div>
+
+              <div style="background:#1b2820; border:3px solid #3f5747; padding:14px;">
+                <div style="font-weight:900; color:#fbbf24; margin-bottom:8px; font-size:13px;"><span class="emoji-color">🗂️</span> PROSPECTOR PHIL'S 11-TIER RARITY CHART</div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap:6px; font-size:11px;">
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #9ca3af;"><b style="color:#9ca3af;">1. COMMON</b><br>1x Ore</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #4ade80;"><b style="color:#4ade80;">2. UNCOMMON</b><br>2x Iron</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #38bdf8;"><b style="color:#38bdf8;">3. RARE</b><br>1x Gems</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #c084fc;"><b style="color:#c084fc;">4. EPIC</b><br>3x Gems</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #fbbf24;"><b style="color:#fbbf24;">5. MYTHIC</b><br>5x Gems + Gold</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #f43f5e;"><b style="color:#f43f5e;">6. EXOTIC</b><br>8x Gems + Gold</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #14b8a6;"><b style="color:#14b8a6;">7. SECRET</b><br>12x Gems + Gold</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #fef08a;"><b style="color:#fef08a;">8. DIVINE</b><br>18x Gems + Gold</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #818cf8;"><b style="color:#818cf8;">9. GALACTIC</b><br>26x Gems + Gold</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #22d3ee;"><b style="color:#22d3ee;">10. GLITCHED</b><br>38x Gems + Gold</div>
+                  <div style="background:#0e1511; padding:7px; border-left:4px solid #a855f7;"><b style="color:#a855f7;">11. APEX PURPLE</b><br>55x Gems + Jackpot</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PIXEL SIDEBAR -->
+      <div class="side-stack">
+        <div style="font-weight:900; color:#f59e0b; font-size:13px;"><span class="emoji-color">🎒</span> SATCHEL &amp; EQUIPPED TOOL</div>
+        <div style="background:#0c120e; border:2px solid #34493b; padding:6px 8px; font-size:12px; font-weight:900;">
+          <span class="emoji-color">⛏️</span> Tool: <span id="equippedPickLabel" style="color:#fde68a;">Wood Pickaxe</span>
+        </div>
+        <div class="inv-row">
+          <div><span class="emoji-color">🪨</span> STN<br><span id="invStone">0</span></div>
+          <div><span class="emoji-color">🔩</span> IRN<br><span id="invIron">0</span></div>
+          <div><span class="emoji-color">💎</span> GEM<br><span id="invGems">0</span></div>
+          <div><span class="emoji-color">⚔️</span> ATK<br><span id="statAtk">6</span></div>
+        </div>
+        <button class="mini-btn" id="sellOresBtn" style="width:100%;"><span class="emoji-color">💰</span> Quick-Sell (<span id="sideSellPreview">0</span>G)</button>
+
+        <div style="font-weight:900; color:#f59e0b; font-size:12px; margin-top:2px;"><span class="emoji-color">✨</span> 11 ROCK RARITIES</div>
+        <div class="rarity-legend">
+          <span class="rarity-tag" style="color:#9ca3af;">Common</span>
+          <span class="rarity-tag" style="color:#4ade80;">Uncommon</span>
+          <span class="rarity-tag" style="color:#38bdf8;">Rare</span>
+          <span class="rarity-tag" style="color:#c084fc;">Epic</span>
+          <span class="rarity-tag" style="color:#fbbf24;">Mythic</span>
+          <span class="rarity-tag" style="color:#f43f5e;">Exotic</span>
+          <span class="rarity-tag" style="color:#14b8a6;">Secret</span>
+          <span class="rarity-tag" style="color:#fef08a;">Divine</span>
+          <span class="rarity-tag" style="color:#818cf8;">Galactic</span>
+          <span class="rarity-tag" style="color:#22d3ee;">Glitched</span>
+          <span class="rarity-tag" style="color:#a855f7;">Apex Purple</span>
+        </div>
+
+        <div style="background:#0c120e; border:2px solid #34493b; padding:8px; font-size:11px; color:#cbd5e1;">
+          <b><span class="emoji-color">🎯</span> TARGET:</b> <span id="targetRockInfo">Walk near a rock</span>
+        </div>
+
+        <div style="font-weight:900; color:#9ca3af; font-size:12px;"><span class="emoji-color">📜</span> QUARRY LOG</div>
+        <div class="combat-log" id="combatLog">Welcome to the pixel quarry! Forge new pickaxe materials at Hudson's Shop.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
