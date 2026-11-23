@@ -18,7 +18,7 @@
         <h1 class="hero-logo">
           <span class="hero-logo-text">ROCK CHOPPER</span>
         </h1>
-        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons including the Parkour Course, battle Quarry Bosses, and hatch rock pets.</p>
+        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons including the Parkour Course, complete Daily Challenges for XP, and battle Quarry Bosses.</p>
 
         <div class="char-grid">
           <div class="char-card selected" data-char="neil">
@@ -64,6 +64,7 @@
 
         <div class="toolbar-tabs">
           <button class="tab-btn active" data-tab="quarryTab"><span class="emoji-color">⛏️</span> Quarry</button>
+          <button class="tab-btn" data-tab="dailyTab"><span class="emoji-color">📋</span> Daily (<span id="tabDailyCount">0</span>/4)</button>
           <button class="tab-btn" data-tab="hudsonTab"><span class="emoji-color">🏪</span> Hudson's Shop</button>
           <button class="tab-btn" data-tab="addonsTab"><span class="emoji-color">🏗️</span> Add-Ons (<span id="tabAddonCount">0</span>)</button>
           <button class="tab-btn" data-tab="petsTab"><span class="emoji-color">🥚</span> Pets (<span id="tabEggCount">0</span>)</button>
@@ -121,7 +122,29 @@
           </div>
         </div>
 
-        <!-- TAB 2: HUDSON'S SHOP (GEAR & ADD-ON BLUEPRINTS) -->
+        <!-- TAB 2: DAILY CHALLENGES -->
+        <div id="dailyTab" class="tab-panel">
+          <div class="npc-screen">
+            <div class="npc-card-wrap">
+              <div class="npc-header">
+                <div class="npc-portrait emoji-color">📋</div>
+                <div style="flex:1;">
+                  <div style="font-size:20px; font-weight:900; color:#38bdf8;">SMASHCENTER DAILY CHALLENGES</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">COMPLETE DAILY TASKS TO EARN BONUS XP &amp; CLIMB THE DAILY LEADERBOARD</div>
+                  <div class="npc-speech">
+                    Today's Progress: <b style="color:#4ade80;" id="dailyTodayProgress">0/4</b> &nbsp;|&nbsp;
+                    All-Time Daily Challenges Completed: <b style="color:#fbbf24;" id="dailyTotalCompletedText">0</b> &nbsp;|&nbsp;
+                    <span id="dailyResetCountdown" style="color:#38bdf8;">Resets at 00:00 UTC</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="shop-grid" id="dailyChallengesGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: HUDSON'S SHOP (GEAR & ADD-ON BLUEPRINTS) -->
         <div id="hudsonTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -189,7 +212,7 @@
           </div>
         </div>
 
-        <!-- TAB 3: SMASHCENTER ADD-ONS WORKSHOP -->
+        <!-- TAB 4: SMASHCENTER ADD-ONS WORKSHOP -->
         <div id="addonsTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -212,7 +235,7 @@
           </div>
         </div>
 
-        <!-- TAB 4: QUARRY PETS & EGG HATCHERY -->
+        <!-- TAB 5: QUARRY PETS & EGG HATCHERY -->
         <div id="petsTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -237,7 +260,7 @@
           </div>
         </div>
 
-        <!-- TAB 5: PROSPECTOR PHIL -->
+        <!-- TAB 6: PROSPECTOR PHIL -->
         <div id="philTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -245,12 +268,13 @@
                 <div class="npc-portrait emoji-color">🕵️‍♂️</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — VETERAN ROCKHOUND</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PARKOUR, BOSS, RARITY &amp; ADD-ON EXPERT</div>
-                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Build the Parkour Course Add-On and beat the sky-bridge obstacle run to win a Parkour Chikorita pet and the PARKOUR MASTER badge!"</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">DAILY CHALLENGES, PARKOUR, BOSS &amp; RARITY EXPERT</div>
+                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Check the Daily tab for 4 fresh tasks every day—beating them grants instant XP and ranks you up on the Daily Challenges Leaderboard!"</div>
                 </div>
               </div>
 
               <div class="tip-topics">
+                <button class="topic-btn" data-topic="daily"><span class="emoji-color">📋</span> Daily Challenges &amp; XP</button>
                 <button class="topic-btn" data-topic="parkour"><span class="emoji-color">🏃</span> Parkour Course &amp; Chikorita</button>
                 <button class="topic-btn" data-topic="bosses"><span class="emoji-color">👹</span> Quarry Bosses &amp; Relics</button>
                 <button class="topic-btn" data-topic="addons"><span class="emoji-color">🏗️</span> Add-Ons &amp; Blueprints</button>
@@ -281,7 +305,7 @@
           </div>
         </div>
 
-        <!-- TAB 6: ONLINE LEADERBOARD & MINER ACCOUNTS -->
+        <!-- TAB 7: ONLINE LEADERBOARD & MINER ACCOUNTS -->
         <div id="leaderboardTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -289,7 +313,7 @@
                 <div class="npc-portrait emoji-color">🏆</div>
                 <div style="flex:1;">
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">SMASHCENTER ONLINE LEADERBOARD</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS, BADGES &amp; CLOUD SAVES</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS, DAILY CHALLENGES &amp; CLOUD SAVES</div>
                   <div class="npc-speech" id="authStatusMsg">Create a Miner Account or log in to cloud-save your gear &amp; post to the Leaderboard!</div>
                   <div id="accountBadgeShowcase" style="display:none; margin-top:8px;">
                     <span style="display:inline-block; background:#14532d; border:2px solid #facc15; color:#fef08a; font-size:11px; font-weight:900; padding:3px 10px; letter-spacing:0.6px;">
@@ -313,10 +337,16 @@
                 </div>
               </div>
 
+              <!-- Leaderboard Sub-Tabs -->
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                <button class="mini-btn lb-subtab" data-lbmode="progress"><span class="emoji-color">⛰️</span> TOP MINERS (ZONE &amp; LEVEL)</button>
+                <button class="mini-btn secondary lb-subtab" data-lbmode="daily"><span class="emoji-color">📋</span> DAILY CHALLENGES COMPLETED</button>
+              </div>
+
               <!-- Rankings Table -->
               <div style="background:#1b2820; border:3px solid #3f5747; padding:12px; overflow-x:auto;">
                 <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
-                  <thead>
+                  <thead id="leaderboardHead">
                     <tr style="border-bottom:2px solid #3f5747; color:#fbbf24;">
                       <th style="padding:8px;">RANK</th>
                       <th style="padding:8px;">MINER TAG &amp; BADGES</th>
@@ -394,6 +424,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
- <script src="script.js?v=4"></script>
+  <script src="script.js?v=5"></script>
 </body>
 </html>

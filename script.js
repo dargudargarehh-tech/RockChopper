@@ -35,6 +35,100 @@
     }
   };
 
+  // Daily Challenges Pool (4 chosen per UTC day; beating each grants instant XP!)
+  const DAILY_CHALLENGE_POOL = [
+    {
+      id: "smash_15",
+      title: "Boulder Breaker",
+      emoji: "⛏️",
+      color: "#fbbf24",
+      type: "rocks",
+      target: 15,
+      xp: 45,
+      desc: "Smash 15 surface boulders in the quarry."
+    },
+    {
+      id: "smash_35",
+      title: "Quarry Demolition",
+      emoji: "💥",
+      color: "#f97316",
+      type: "rocks",
+      target: 35,
+      xp: 95,
+      desc: "Shatter 35 surface boulders in the quarry."
+    },
+    {
+      id: "rare_4",
+      title: "Rare Vein Hunter",
+      emoji: "💎",
+      color: "#38bdf8",
+      type: "rare_rocks",
+      target: 4,
+      xp: 80,
+      desc: "Smash 4 Rare (blue) or higher-tier boulders."
+    },
+    {
+      id: "enemies_4",
+      title: "Quarry Patrol",
+      emoji: "🐺",
+      color: "#f87171",
+      type: "enemies",
+      target: 4,
+      xp: 65,
+      desc: "Defeat 4 wild quarry critters."
+    },
+    {
+      id: "gold_150",
+      title: "Gold Prospector",
+      emoji: "💰",
+      color: "#facc15",
+      type: "gold_earned",
+      target: 150,
+      xp: 75,
+      desc: "Collect or sell ores for 150 Gold."
+    },
+    {
+      id: "zones_2",
+      title: "Deep Expedition",
+      emoji: "🪜",
+      color: "#4ade80",
+      type: "zones",
+      target: 2,
+      xp: 90,
+      desc: "Step through Zone Gates to advance 2 Zones."
+    },
+    {
+      id: "eggs_2",
+      title: "Nest Finder",
+      emoji: "🥚",
+      color: "#fde68a",
+      type: "eggs",
+      target: 2,
+      xp: 85,
+      desc: "Collect 2 Quarry Eggs from broken boulders."
+    },
+    {
+      id: "parkour_1",
+      title: "Sky-Bridge Sprinter",
+      emoji: "🏃",
+      color: "#a3e635",
+      type: "parkour",
+      target: 1,
+      xp: 120,
+      desc: "Beat the Smashcenter Parkour Course 1 time."
+    },
+    {
+      id: "boss_1",
+      title: "Titan Challenger",
+      emoji: "👹",
+      color: "#c084fc",
+      type: "bosses",
+      target: 1,
+      xp: 150,
+      desc: "Defeat 1 Quarry Boss."
+    }
+  ];
+
   // Quarry Bosses Catalog (Spawn every 3 Zones or via Summon Boss)
   const BOSS_CATALOG = [
     {
@@ -187,7 +281,7 @@
     }
   };
 
-  // Quarry Pets Catalog (Including Boss & Parkour Exclusives!)
+  // Quarry Pets Catalog
   const PET_CATALOG = {
     potato_rock: {
       id: "potato_rock",
@@ -320,6 +414,11 @@
     bossKills: 0,
     parkourMaster: false,
     parkourClears: 0,
+    dailyChallengesCompleted: 0,
+    dailyState: {
+      date: "",
+      challenges: []
+    },
     bossRelics: {
       granite_heart: false,
       wyrm_scale: false,
@@ -392,6 +491,126 @@
   };
 
   // =========================================================
+  // DAILY CHALLENGES ENGINE (UTC ROTATION & INSTANT XP REWARDS)
+  // =========================================================
+  function getTodayUtcKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function ensureDailyChallenges() {
+    const today = getTodayUtcKey();
+    if (
+      state.dailyState &&
+      state.dailyState.date === today &&
+      Array.isArray(state.dailyState.challenges) &&
+      state.dailyState.challenges.length === 4
+    ) {
+      return;
+    }
+
+    // Deterministic daily selection of 4 distinct challenges for today's UTC date
+    const daySeed = Math.floor(Date.now() / 86400000);
+    const pool = [...DAILY_CHALLENGE_POOL];
+    const chosen = [];
+    let s = daySeed * 1664525 + 1013904223;
+    while (chosen.length < 4 && pool.length > 0) {
+      s = (s * 1103515245 + 12345) & 0x7fffffff;
+      const idx = s % pool.length;
+      const picked = pool.splice(idx, 1)[0];
+      chosen.push({
+        id: picked.id,
+        progress: 0,
+        completed: false
+      });
+    }
+
+    state.dailyState = {
+      date: today,
+      challenges: chosen
+    };
+  }
+
+  function recordDailyProgress(eventType, amount = 1) {
+    if (amount <= 0) return;
+    ensureDailyChallenges();
+    let anyCompletedNow = false;
+
+    for (const entry of state.dailyState.challenges) {
+      if (entry.completed) continue;
+      const cfg = DAILY_CHALLENGE_POOL.find((c) => c.id === entry.id);
+      if (!cfg || cfg.type !== eventType) continue;
+
+      entry.progress = Math.min(cfg.target, entry.progress + amount);
+      if (entry.progress >= cfg.target) {
+        entry.completed = true;
+        anyCompletedNow = true;
+        state.dailyChallengesCompleted = (state.dailyChallengesCompleted || 0) + 1;
+        gainXp(cfg.xp);
+        addLog(`📋 DAILY CHALLENGE COMPLETE: ${cfg.title}! (+${cfg.xp} XP)`);
+        addFloatingText(state.player.x, state.player.y - 36, `DAILY COMPLETE! +${cfg.xp} XP`, "#38bdf8");
+      }
+    }
+
+    if (anyCompletedNow) {
+      saveProgress();
+      syncAccountToCloud();
+    }
+    renderDailyChallengesUI();
+  }
+
+  function renderDailyChallengesUI() {
+    ensureDailyChallenges();
+    const grid = game.querySelector("#dailyChallengesGrid");
+    const tabCountEl = game.querySelector("#tabDailyCount");
+    const todayProgEl = game.querySelector("#dailyTodayProgress");
+    const totalCompEl = game.querySelector("#dailyTotalCompletedText");
+    const resetEl = game.querySelector("#dailyResetCountdown");
+
+    const completedToday = state.dailyState.challenges.filter((c) => c.completed).length;
+    if (tabCountEl) tabCountEl.textContent = completedToday;
+    if (todayProgEl) todayProgEl.textContent = `${completedToday}/4`;
+    if (totalCompEl) totalCompEl.textContent = (state.dailyChallengesCompleted || 0).toLocaleString();
+
+    if (resetEl) {
+      const now = new Date();
+      const nextUtcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0);
+      const minsLeft = Math.max(1, Math.floor((nextUtcMidnight - now.getTime()) / 60000));
+      const hrs = Math.floor(minsLeft / 60);
+      const mins = minsLeft % 60;
+      resetEl.textContent = `Resets in ${hrs}h ${mins}m (00:00 UTC)`;
+    }
+
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    for (const entry of state.dailyState.challenges) {
+      const cfg = DAILY_CHALLENGE_POOL.find((c) => c.id === entry.id);
+      if (!cfg) continue;
+
+      const pct = Math.min(100, Math.round((entry.progress / cfg.target) * 100));
+      const card = document.createElement("div");
+      card.className = "shop-item";
+      card.style.borderColor = entry.completed ? "#4ade80" : "";
+      card.innerHTML = `
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+            <span style="font-weight:900; font-size:15px; color:${cfg.color};"><span class="emoji-color">${cfg.emoji}</span> ${cfg.title}</span>
+            <span style="font-size:11px; font-weight:900; color:#38bdf8;">+${cfg.xp} XP</span>
+          </div>
+          <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">${cfg.desc}</div>
+          <div style="margin-top:8px; background:#090d0a; border:1px solid #34493b; height:12px; position:relative;">
+            <div style="background:${entry.completed ? "#4ade80" : cfg.color}; width:${pct}%; height:100%;"></div>
+          </div>
+          <div style="font-size:11px; font-weight:900; color:${entry.completed ? "#4ade80" : "#fde68a"}; margin-top:5px;">
+            ${entry.completed ? `✓ COMPLETED (+${cfg.xp} XP AWARDED)` : `Progress: ${entry.progress} / ${cfg.target}`}
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+
+  // =========================================================
   // PROGRESS SAVER (localStorage)
   // =========================================================
   function buildSavePayload() {
@@ -413,6 +632,8 @@
       bossKills: state.bossKills,
       parkourMaster: state.parkourMaster,
       parkourClears: state.parkourClears,
+      dailyChallengesCompleted: state.dailyChallengesCompleted,
+      dailyState: state.dailyState,
       bossRelics: state.bossRelics,
       blueprints: state.blueprints,
       addons: state.addons,
@@ -437,7 +658,10 @@
   function loadProgress() {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return false;
+      if (!raw) {
+        ensureDailyChallenges();
+        return false;
+      }
       const data = JSON.parse(raw);
       if (data.selectedChar && characters[data.selectedChar]) state.selectedChar = data.selectedChar;
       if (typeof data.pickTier === "number") state.pickTier = Math.min(PICKAXE_MATERIALS.length - 1, Math.max(0, data.pickTier));
@@ -455,6 +679,15 @@
       if (typeof data.bossKills === "number") state.bossKills = Math.max(0, data.bossKills);
       state.parkourMaster = Boolean(data.parkourMaster);
       if (typeof data.parkourClears === "number") state.parkourClears = Math.max(0, data.parkourClears);
+      if (typeof data.dailyChallengesCompleted === "number") state.dailyChallengesCompleted = Math.max(0, data.dailyChallengesCompleted);
+
+      if (data.dailyState && typeof data.dailyState === "object") {
+        state.dailyState = {
+          date: String(data.dailyState.date || ""),
+          challenges: Array.isArray(data.dailyState.challenges) ? data.dailyState.challenges : []
+        };
+      }
+      ensureDailyChallenges();
 
       state.bossRelics = { granite_heart: false, wyrm_scale: false, sovereign_prism: false, void_crown: false };
       if (data.bossRelics && typeof data.bossRelics === "object") {
@@ -502,6 +735,7 @@
       game.querySelector("#toggleTouchBtn").innerHTML = `<span class="emoji-color">📱</span> Touch: ${state.touchVisible ? "ON" : "OFF"}`;
       return true;
     } catch (err) {
+      ensureDailyChallenges();
       return false;
     }
   }
@@ -524,6 +758,9 @@
     state.bossKills = 0;
     state.parkourMaster = false;
     state.parkourClears = 0;
+    state.dailyChallengesCompleted = 0;
+    state.dailyState = { date: "", challenges: [] };
+    ensureDailyChallenges();
     state.parkour.active = false;
     state.bossRelics = { granite_heart: false, wyrm_scale: false, sovereign_prism: false, void_crown: false };
     state.boss = null;
@@ -654,28 +891,19 @@
   function buildParkourCourse() {
     const pk = state.parkour;
     pk.platforms = [
-      // Start deck (Cols 1-4, Rows 8-10)
       { x: TILE * 1, y: TILE * 8, w: TILE * 4, h: TILE * 3, color: "#475569" },
-      // Stepping stones across chasm (1-tile gaps — leap with Space/CHOP!)
       { x: TILE * 6, y: TILE * 8.5, w: TILE * 2, h: TILE * 2, color: "#64748b" },
       { x: TILE * 9, y: TILE * 8.5, w: TILE * 2, h: TILE * 2, color: "#64748b" },
-      // Checkpoint 1 Deck
       { x: TILE * 12, y: TILE * 8, w: TILE * 3, h: TILE * 3, color: "#334155" },
-      // Bridge to Moving Platform Zone
       { x: TILE * 15, y: TILE * 9, w: TILE * 1.5, h: TILE * 1.5, color: "#64748b" },
-      // Checkpoint 2 Deck (Top right bend)
       { x: TILE * 20, y: TILE * 4, w: TILE * 3, h: TILE * 3, color: "#334155" },
-      // Spike Gauntlet Bridge
       { x: TILE * 23, y: TILE * 4.5, w: TILE * 3, h: TILE * 2, color: "#475569" },
-      // Checkpoint 3 Deck (Lower right)
       { x: TILE * 23.5, y: TILE * 11, w: TILE * 3, h: TILE * 2.5, color: "#334155" },
-      // Final Leap Stone & Finish Trophy Island
       { x: TILE * 21, y: TILE * 14, w: TILE * 1.8, h: TILE * 1.8, color: "#64748b" },
       { x: TILE * 16.5, y: TILE * 13.5, w: TILE * 3.5, h: TILE * 3, color: "#14532d", isFinish: true }
     ];
 
     pk.movers = [
-      // Horizontal floating stone platform between Col 16.5 and Col 20
       {
         x: TILE * 17,
         y: TILE * 7.5,
@@ -690,7 +918,6 @@
         vx: 0,
         vy: 0
       },
-      // Vertical elevator stone between Spike Bridge and Checkpoint 3
       {
         x: TILE * 24.2,
         y: TILE * 7.2,
@@ -708,7 +935,6 @@
     ];
 
     pk.hazards = [
-      // Pulsing spike traps on the Spike Gauntlet Bridge
       { x: TILE * 23.4, y: TILE * 4.6, w: TILE * 0.9, h: TILE * 1.8, offset: 0 },
       { x: TILE * 24.8, y: TILE * 4.6, w: TILE * 0.9, h: TILE * 1.8, offset: 95 }
     ];
@@ -789,6 +1015,9 @@
       addFloatingText(state.player.x, state.player.y - 28, `COURSE CLEAR! +${goldReward}G`, "#a3e635");
     }
 
+    recordDailyProgress("parkour", 1);
+    recordDailyProgress("gold_earned", goldReward);
+
     saveProgress(true);
     syncAccountToCloud();
     updateUI();
@@ -808,7 +1037,6 @@
     if (pk.leapTimer > 0) pk.leapTimer--;
     if (pk.leapCooldown > 0) pk.leapCooldown--;
 
-    // Update moving platforms
     const t = Date.now();
     for (const m of pk.movers) {
       const prevX = m.x;
@@ -820,7 +1048,6 @@
       m.vy = m.y - prevY;
     }
 
-    // Move player freely across the sky arena
     let dx = 0;
     let dy = 0;
     if (state.keys["w"] || state.keys["ArrowUp"] || state.touchDirs.up) dy -= 1;
@@ -840,16 +1067,13 @@
       p.x = Math.max(TILE, Math.min((COLS - 1) * TILE, p.x + dx * spd));
       p.y = Math.max(TILE, Math.min((ROWS - 1) * TILE, p.y + dy * spd));
     } else if (pk.leapTimer > 0) {
-      // Forward hop boost even if tapped while stationary
       p.x = Math.max(TILE, Math.min((COLS - 1) * TILE, p.x + p.dirX * spd));
       p.y = Math.max(TILE, Math.min((ROWS - 1) * TILE, p.y + p.dirY * spd));
     }
 
-    // Smooth pet follow
     state.petPos.x += (p.x - p.dirX * 26 - state.petPos.x) * 0.14;
     state.petPos.y += (p.y - p.dirY * 26 + 6 - state.petPos.y) * 0.14;
 
-    // Check if standing on solid platform or moving platform
     let onSolid = false;
     for (const plat of pk.platforms) {
       if (p.x >= plat.x - 6 && p.x <= plat.x + plat.w + 6 && p.y >= plat.y - 6 && p.y <= plat.y + plat.h + 6) {
@@ -870,7 +1094,6 @@
       }
     }
 
-    // Checkpoints
     for (const cp of pk.checkpoints) {
       if (!cp.reached && Math.hypot(p.x - cp.x, p.y - cp.y) < 34) {
         cp.reached = true;
@@ -883,7 +1106,6 @@
       }
     }
 
-    // Hazard spike check (only dangerous when active & not airborne)
     const cycleTick = Math.floor(Date.now() / 16);
     if (pk.leapTimer === 0) {
       for (const hz of pk.hazards) {
@@ -899,7 +1121,6 @@
       }
     }
 
-    // Chasm fall check (safe while mid-leap!)
     if (!onSolid && pk.leapTimer === 0) {
       spawnRockParticles(p.x, p.y, "#38bdf8", 14);
       addFloatingText(p.x, p.y - 20, "FELL! BACK TO CHECKPOINT", "#f87171");
@@ -908,13 +1129,11 @@
       return;
     }
 
-    // Finish Trophy check
     if (Math.hypot(p.x - pk.finish.x, p.y - pk.finish.y) < 38) {
       handleParkourCompleted();
       return;
     }
 
-    // Update particles & floating texts
     for (let i = state.particles.length - 1; i >= 0; i--) {
       const pt = state.particles[i];
       pt.x += pt.vx;
@@ -937,14 +1156,12 @@
     const camX = Math.round(Math.max(0, Math.min(worldW - canvas.width, state.player.x - canvas.width / 2)));
     const camY = Math.round(Math.max(0, Math.min(worldH - canvas.height, state.player.y - canvas.height / 2)));
 
-    // Deep Sky-Quarry Chasm Background
     ctx.fillStyle = "#090d16";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
     ctx.translate(-camX, -camY);
 
-    // Chasm Grid & Floating Dust Motes
     ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
     ctx.lineWidth = 1;
     for (let c = 0; c <= COLS; c++) {
@@ -960,7 +1177,6 @@
       ctx.stroke();
     }
 
-    // Static Platforms
     for (const plat of pk.platforms) {
       ctx.fillStyle = "#020617";
       ctx.fillRect(plat.x + 4, plat.y + 8, plat.w, plat.h);
@@ -971,7 +1187,6 @@
       ctx.strokeRect(plat.x, plat.y, plat.w, plat.h);
     }
 
-    // Moving Platforms
     for (const m of pk.movers) {
       ctx.fillStyle = "#020617";
       ctx.fillRect(Math.round(m.x) + 4, Math.round(m.y) + 8, m.w, m.h);
@@ -982,7 +1197,6 @@
       ctx.strokeRect(Math.round(m.x), Math.round(m.y), m.w, m.h);
     }
 
-    // Pulsing Spike Grates
     const cycleTick = Math.floor(Date.now() / 16);
     for (const hz of pk.hazards) {
       const phase = (cycleTick + hz.offset) % 180;
@@ -1002,7 +1216,6 @@
       }
     }
 
-    // Checkpoints
     for (const cp of pk.checkpoints) {
       ctx.fillStyle = "#ffffff";
       ctx.font = EMOJI_FONT(24);
@@ -1014,7 +1227,6 @@
       ctx.fillText(cp.label, cp.x, cp.y - 20);
     }
 
-    // Finish Pedestal Trophy
     const bob = Math.round(Math.sin(Date.now() * 0.007) * 4);
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(34);
@@ -1025,13 +1237,11 @@
     ctx.fillStyle = "#fde047";
     ctx.fillText("FINISH", pk.finish.x, pk.finish.y - 26);
 
-    // Equipped Pet
     const activePet = getActivePet();
     if (activePet) {
       drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
     }
 
-    // Player (with jump elevation offset during Leap!)
     const p = state.player;
     const ch = getActiveChar();
     const leapLift = pk.leapTimer > 0 ? Math.sin((pk.leapTimer / 14) * Math.PI) * 18 : 0;
@@ -1052,7 +1262,6 @@
     drawCharacterHeader(ch.name.toUpperCase());
     ctx.restore();
 
-    // Particles & Floating Text
     for (const pt of state.particles) {
       ctx.fillStyle = pt.color;
       ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size);
@@ -1068,7 +1277,6 @@
 
     ctx.restore();
 
-    // Top Screen Parkour Course HUD
     const barW = Math.min(460, canvas.width - 24);
     const barX = Math.round((canvas.width - barW) / 2);
     ctx.fillStyle = "rgba(9, 13, 10, 0.9)";
@@ -1136,6 +1344,7 @@
     addLog(`🏆 DEFEATED ${boss.name}! (+${boss.xp} XP)`);
     addFloatingText(boss.x, boss.y - 24, "BOSS DEFEATED!", "#fbbf24");
     gainXp(boss.xp);
+    recordDailyProgress("bosses", 1);
 
     const goldDrop = Math.round(boss.gold * (1 + (state.floor - 1) * 0.2) * mult);
     const gemDrop = Math.ceil(boss.gems * mult);
@@ -1432,17 +1641,17 @@
   function rollRockRarity() {
     const z = state.floor - 1;
     const roll = Math.random();
-    if (roll < 0.004 + z * 0.002) return RARITIES[10]; // Apex Purple
-    if (roll < 0.011 + z * 0.004) return RARITIES[9];  // Glitched
-    if (roll < 0.022 + z * 0.006) return RARITIES[8];  // Galactic
-    if (roll < 0.040 + z * 0.009) return RARITIES[7];  // Divine
-    if (roll < 0.068 + z * 0.012) return RARITIES[6];  // Secret
-    if (roll < 0.110 + z * 0.016) return RARITIES[5];  // Exotic
-    if (roll < 0.175 + z * 0.020) return RARITIES[4];  // Mythic
-    if (roll < 0.270 + z * 0.022) return RARITIES[3];  // Epic
-    if (roll < 0.430 + z * 0.020) return RARITIES[2];  // Rare
-    if (roll < 0.700) return RARITIES[1];              // Uncommon
-    return RARITIES[0];                                // Common
+    if (roll < 0.004 + z * 0.002) return RARITIES[10];
+    if (roll < 0.011 + z * 0.004) return RARITIES[9];
+    if (roll < 0.022 + z * 0.006) return RARITIES[8];
+    if (roll < 0.040 + z * 0.009) return RARITIES[7];
+    if (roll < 0.068 + z * 0.012) return RARITIES[6];
+    if (roll < 0.110 + z * 0.016) return RARITIES[5];
+    if (roll < 0.175 + z * 0.020) return RARITIES[4];
+    if (roll < 0.270 + z * 0.022) return RARITIES[3];
+    if (roll < 0.430 + z * 0.020) return RARITIES[2];
+    if (roll < 0.700) return RARITIES[1];
+    return RARITIES[0];
   }
 
   function generateFloor() {
@@ -1662,6 +1871,7 @@
     game.querySelector("#sideHatchBtn").disabled = state.eggs <= 0;
     game.querySelector("#unequipPetBtn").disabled = !state.equippedPet;
 
+    renderDailyChallengesUI();
     renderBossRelicsUI();
     renderAddonsUI();
     renderPetRoster();
@@ -1688,7 +1898,12 @@
 
     if (cell.hp <= 0) {
       const mult = getTotalLootMult();
-      gainXp(cell.rarity.xp + state.floor);
+      const brokenRarity = cell.rarity;
+      gainXp(brokenRarity.xp + state.floor);
+      recordDailyProgress("rocks", 1);
+      if (brokenRarity.xp >= 14) {
+        recordDailyProgress("rare_rocks", 1);
+      }
 
       if (cell.hasGate) {
         state.grid[r][c] = { type: "gate" };
@@ -1696,27 +1911,27 @@
         addFloatingText(cx, cy, "NEXT ZONE GATE!", "#4ade80");
       } else {
         state.grid[r][c] = { type: "ground", variant: (r + c) % 3 };
-        const qty = Math.ceil(cell.rarity.dropCount * mult);
+        const qty = Math.ceil(brokenRarity.dropCount * mult);
         state.drops.push({
-          x: cx - (cell.rarity.goldBonus > 0 ? 7 : 0),
+          x: cx - (brokenRarity.goldBonus > 0 ? 7 : 0),
           y: cy,
-          type: cell.rarity.dropType,
+          type: brokenRarity.dropType,
           amount: qty,
-          emoji: cell.rarity.dropEmoji
+          emoji: brokenRarity.dropEmoji
         });
 
-        if (cell.rarity.goldBonus > 0) {
+        if (brokenRarity.goldBonus > 0) {
           state.drops.push({
             x: cx + 7,
             y: cy,
             type: "gold",
-            amount: Math.round(cell.rarity.goldBonus * state.floor * mult),
+            amount: Math.round(brokenRarity.goldBonus * state.floor * mult),
             emoji: "💰"
           });
         }
 
         const eggBonus = (state.addons.incubator || 0) * 0.12 + (state.bossRelics.sovereign_prism ? 0.15 : 0);
-        if (Math.random() < Math.min(1, cell.rarity.eggChance + eggBonus)) {
+        if (Math.random() < Math.min(1, brokenRarity.eggChance + eggBonus)) {
           state.drops.push({
             x: cx,
             y: cy - 8,
@@ -1724,11 +1939,11 @@
             amount: 1,
             emoji: "🥚"
           });
-          addLog(`🥚 A Quarry Egg popped out of the ${cell.rarity.label} rock!`);
+          addLog(`🥚 A Quarry Egg popped out of the ${brokenRarity.label} rock!`);
         }
 
-        if (cell.rarity.xp >= 24) {
-          addLog(`★ Shattered a [${cell.rarity.label.toUpperCase()}] boulder!`);
+        if (brokenRarity.xp >= 24) {
+          addLog(`★ Shattered a [${brokenRarity.label.toUpperCase()}] boulder!`);
         }
       }
       saveProgress();
@@ -1777,6 +1992,7 @@
         if (e.hp <= 0) {
           addLog(`${getActiveChar().name} defeated ${e.name}! (+${10 + state.floor * 3} XP)`);
           gainXp(10 + state.floor * 3);
+          recordDailyProgress("enemies", 1);
           state.drops.push({ x: e.x, y: e.y, type: "gold", amount: 7 + state.floor * 2, emoji: "💰" });
           if (Math.random() < 0.35) {
             state.drops.push({ x: e.x + 10, y: e.y, type: "potion", amount: 30, emoji: "🧪" });
@@ -1894,6 +2110,7 @@
       } else {
         state.floor += 1;
         addLog(`⛰️ Entered Zone ${state.floor}! Higher Galactic & Apex odds!`);
+        recordDailyProgress("zones", 1);
         saveProgress();
         generateFloor();
         return;
@@ -1903,13 +2120,17 @@
     for (let i = state.drops.length - 1; i >= 0; i--) {
       const d = state.drops[i];
       if (Math.hypot(p.x - d.x, p.y - d.y) < 30) {
-        if (d.type === "gold") state.gold += d.amount;
+        if (d.type === "gold") {
+          state.gold += d.amount;
+          recordDailyProgress("gold_earned", d.amount);
+        }
         if (d.type === "stone") state.stone += d.amount;
         if (d.type === "iron") state.iron += d.amount;
         if (d.type === "gem") state.gems += d.amount;
         if (d.type === "egg") {
           state.eggs += d.amount;
           addFloatingText(p.x, p.y - 22, "+1 QUARRY EGG!", "#fde68a");
+          recordDailyProgress("eggs", d.amount);
         }
         if (d.type === "potion") {
           state.hp = Math.min(state.maxHp, state.hp + d.amount);
@@ -2076,7 +2297,7 @@
     }
   }
 
-  // Draw Custom Pixel-Art Quarry Pet Companion (Including Parkour Chikorita!)
+  // Draw Custom Pixel-Art Quarry Pet Companion
   function drawEquippedPet(pet, px, py) {
     const bob = Math.round(Math.sin(Date.now() * 0.008) * 2);
     const x = Math.round(px);
@@ -2144,36 +2365,29 @@
       ctx.fillRect(-1, -1, 2, 2);
       ctx.fillRect(4, -1, 2, 2);
     } else if (pet.id === "parkour_chikorita") {
-      // Parkour Chikorita Pixel Art (Authentic Chikorita palette + Red/Gold Parkour Headband)
-      // Head leaf crest
       ctx.fillStyle = "#388028";
       ctx.fillRect(-2, -16, 10, 4);
       ctx.fillStyle = "#60A848";
       ctx.fillRect(0, -15, 8, 3);
-      // Pear-shaped pale lime body
       ctx.fillStyle = "#98C008";
       ctx.fillRect(-7, -8, 14, 15);
       ctx.fillStyle = "#C8E860";
       ctx.fillRect(-6, -7, 12, 13);
       ctx.fillStyle = "#D8F880";
       ctx.fillRect(-4, -6, 6, 6);
-      // Sporty Red & Gold Parkour Headband
       ctx.fillStyle = "#dc2626";
       ctx.fillRect(-7, -6, 14, 3);
       ctx.fillStyle = "#facc15";
       ctx.fillRect(-1, -6, 3, 3);
       ctx.fillStyle = "#dc2626";
-      ctx.fillRect(-10, -5, 3, 2); // fluttering headband tail
-      // Cute red Chikorita eyes
+      ctx.fillRect(-10, -5, 3, 2);
       ctx.fillStyle = "#900000";
       ctx.fillRect(-3, -2, 2, 3);
       ctx.fillRect(2, -2, 2, 3);
-      // Dark green neck leaf buds
       ctx.fillStyle = "#388028";
       ctx.fillRect(-5, 2, 3, 2);
       ctx.fillRect(-1, 2, 3, 2);
       ctx.fillRect(3, 2, 3, 2);
-      // Little feet
       ctx.fillStyle = "#98C008";
       ctx.fillRect(-5, 7, 3, 2);
       ctx.fillRect(2, 7, 3, 2);
@@ -2223,7 +2437,6 @@
     const earthShades = ["#8c6d46", "#80623d", "#96764d"];
     const tick = Math.floor(Date.now() / 120);
 
-    // 1. Pixel Ground, Grass Perimeter, and Stepped Pixel Boulders
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const cell = state.grid[r][c];
@@ -2307,7 +2520,6 @@
       }
     }
 
-    // 2. Pixel Minecart Tracks at Camp
     for (const tr of state.tracks) {
       const tx = tr.c * TILE;
       const ty = tr.r * TILE;
@@ -2320,10 +2532,8 @@
       ctx.fillRect(tx, ty + 29, TILE, 3);
     }
 
-    // 3. Built Smashcenter Add-Ons in Camp
     drawCampAddons();
 
-    // 4. Perimeter Trees
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -2332,7 +2542,6 @@
       ctx.fillText("🌲", tree.x, tree.y);
     }
 
-    // 5. Camp NPCs
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(28);
     ctx.fillText("🧑‍💼", TILE * 4.5, TILE * 1.5);
@@ -2342,7 +2551,6 @@
     ctx.fillText("HUDSON", TILE * 4.5, TILE * 1.5 - 20);
     ctx.fillText("PROSPECTOR PHIL", TILE * 5.5, TILE * 2.2 - 20);
 
-    // 6. Loot Drops
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(22);
     for (const d of state.drops) {
@@ -2350,7 +2558,6 @@
       ctx.fillText(d.emoji, Math.round(d.x), Math.round(d.y) + bob);
     }
 
-    // 7. Wildlife
     for (const e of state.enemies) {
       ctx.fillStyle = "#ffffff";
       ctx.font = EMOJI_FONT(28);
@@ -2361,7 +2568,6 @@
       ctx.fillRect(Math.round(e.x) - 15, Math.round(e.y) - 21, Math.round(30 * (e.hp / e.maxHp)), 3);
     }
 
-    // 8. Quarry Boss
     if (state.boss) {
       const b = state.boss;
       const bx = Math.round(b.x);
@@ -2393,13 +2599,11 @@
       ctx.fillText("★ BOSS ★", bx, by - 30);
     }
 
-    // 9. Equipped Quarry Pet Companion
     const activePet = getActivePet();
     if (activePet) {
       drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
     }
 
-    // 10. Player + PARKOUR MASTER Badge + Material-Colored Pixel Pickaxe
     const p = state.player;
     const ch = getActiveChar();
     const pick = getActivePickaxe();
@@ -2435,7 +2639,6 @@
 
     ctx.restore();
 
-    // 11. Square Pixel Particles & Floating Text
     for (const pt of state.particles) {
       ctx.fillStyle = pt.color;
       ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size);
@@ -2451,7 +2654,6 @@
 
     ctx.restore();
 
-    // 12. Top-of-Screen Boss Health Bar HUD
     if (state.boss) {
       const b = state.boss;
       const barW = Math.min(420, canvas.width - 32);
@@ -2497,6 +2699,8 @@
     });
     if (tabId === "quarryTab") {
       resizeCanvas();
+    } else if (tabId === "dailyTab") {
+      renderDailyChallengesUI();
     } else if (tabId === "leaderboardTab") {
       renderLeaderboardTable();
     }
@@ -2554,6 +2758,7 @@
 
   // Prospector Phil Dialogue Topics
   const philTips = {
+    daily: "\"Open the Daily tab to view 4 fresh Daily Challenges that reset every day at 00:00 UTC! As soon as you finish any challenge, you automatically earn bonus XP and climb the Daily Challenges Completed tab on the Leaderboard!\"",
     parkour: "\"Buy the Parkour Course Blueprint from Hudson (150G) and build it in the Add-Ons tab! Once built, click Enter Parkour, leap across gaps with Space/CHOP, tag all 3 Checkpoint Flags, and reach the Trophy to win the Parkour Chikorita pet and the PARKOUR MASTER badge!\"",
     bosses: "\"A Quarry Boss spawns automatically on every 3rd Zone (Zones 3, 6, 9…), or you can click Summon Boss for 15 Stone! Watch out for their red slam ring—defeating bosses drops permanent Boss Relics and the Mythic Pyre Drake pet!\"",
     addons: "\"Buy Add-On Blueprints from Hudson with Gold, then switch to the Add-Ons tab to craft and upgrade them with Stone, Iron, and Gems! Each built Add-On appears right in your Smashcenter Base Camp!\"",
@@ -2564,7 +2769,7 @@
     random: [
       "\"Prospector Note #104: Once you unlock the PARKOUR MASTER badge, it displays proudly above your character AND under your Miner Account on the global Leaderboard!\"",
       "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with the Ore Refinery (+25%/lv) and Parkour Chikorita (+20%) for massive payouts at Hudson's Shop!\"",
-      "\"Prospector Note #312: Log into a Miner Account in the Leaderboard tab to cloud-save all your pickaxes, built add-ons, badges, and pets across devices!\""
+      "\"Prospector Note #312: Check the Daily Challenges tab in the Leaderboard to see who has completed the most Daily Challenges across Smashcenter!\""
     ]
   };
 
@@ -2659,6 +2864,7 @@
     state.stone = 0;
     state.iron = 0;
     state.gems = 0;
+    recordDailyProgress("gold_earned", earned);
     game.querySelector("#hudsonSpeech").textContent = `"Pleasure doing business! Here's ${earned.toLocaleString()} gold. Need a pickaxe upgrade or an Add-On Blueprint?"`;
     addLog(`Sold ores to Hudson for +${earned.toLocaleString()}G!`);
     saveProgress();
@@ -2752,6 +2958,7 @@
   let currentUser = null;
   let loggedInAlias = "";
   let lbEntries = {};
+  let leaderboardMode = "progress"; // "progress" | "daily"
 
   function toMinerEmail(username) {
     return `${username.toLowerCase()}@smashcenter.game`;
@@ -2766,14 +2973,62 @@
     updateUI();
   }
 
+  game.querySelectorAll(".lb-subtab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      leaderboardMode = btn.dataset.lbmode;
+      game.querySelectorAll(".lb-subtab").forEach((b) => {
+        b.classList.toggle("secondary", b.dataset.lbmode !== leaderboardMode);
+      });
+      renderLeaderboardTable();
+    });
+  });
+
   function renderLeaderboardTable() {
+    const thead = game.querySelector("#leaderboardHead");
     const tbody = game.querySelector("#leaderboardBody");
-    if (!tbody) return;
+    if (!tbody || !thead) return;
+
+    if (leaderboardMode === "daily") {
+      thead.innerHTML = `
+        <tr style="border-bottom:2px solid #3f5747; color:#38bdf8;">
+          <th style="padding:8px;">RANK</th>
+          <th style="padding:8px;">MINER TAG &amp; BADGES</th>
+          <th style="padding:8px;">CLASS</th>
+          <th style="padding:8px;">DAILY CHALLENGES</th>
+          <th style="padding:8px;">LEVEL</th>
+          <th style="padding:8px;">ZONE</th>
+        </tr>
+      `;
+    } else {
+      thead.innerHTML = `
+        <tr style="border-bottom:2px solid #3f5747; color:#fbbf24;">
+          <th style="padding:8px;">RANK</th>
+          <th style="padding:8px;">MINER TAG &amp; BADGES</th>
+          <th style="padding:8px;">CLASS</th>
+          <th style="padding:8px;">ZONE</th>
+          <th style="padding:8px;">LEVEL</th>
+          <th style="padding:8px;">GOLD</th>
+        </tr>
+      `;
+    }
 
     const list = Object.entries(lbEntries)
-      .map(([uid, row]) => ({ uid, ...row }))
+      .map(([uid, row]) => ({
+        uid,
+        ...row,
+        dailyCount: Number(
+          currentUser && uid === currentUser.uid
+            ? Math.max(row.dailyChallengesCompleted || 0, state.dailyChallengesCompleted || 0)
+            : (row.dailyChallengesCompleted || 0)
+        )
+      }))
       .filter((row) => row && row.username)
-      .sort((a, b) => (b.zone - a.zone) || (b.level - a.level) || (b.gold - a.gold))
+      .sort((a, b) => {
+        if (leaderboardMode === "daily") {
+          return (b.dailyCount - a.dailyCount) || (b.level - a.level) || (b.zone - a.zone);
+        }
+        return (b.zone - a.zone) || (b.level - a.level) || (b.gold - a.gold);
+      })
       .slice(0, 25);
 
     if (list.length === 0) {
@@ -2788,6 +3043,22 @@
       const badgeHtml = hasParkourBadge
         ? `<div style="margin-top:4px;"><span style="display:inline-block; background:#14532d; border:1px solid #facc15; color:#fef08a; font-size:10px; font-weight:900; padding:1px 6px;"><span class="emoji-color">🏅</span> PARKOUR MASTER</span></div>`
         : "";
+
+      if (leaderboardMode === "daily") {
+        return `
+          <tr style="border-bottom:1px solid #2b3a30; background:${isMe ? "rgba(56, 189, 248, 0.16)" : "transparent"};">
+            <td style="padding:8px; font-weight:900; color:${rankColor};">#${idx + 1}</td>
+            <td style="padding:8px; font-weight:900; color:${isMe ? "#fde68a" : "#ffffff"};">
+              <div>${row.username}${isMe ? " (YOU)" : ""}</div>
+              ${badgeHtml}
+            </td>
+            <td style="padding:8px; color:#cbd5e1;">${row.miner || "Neil"}</td>
+            <td style="padding:8px; font-weight:900; color:#38bdf8;"><span class="emoji-color">📋</span> ${row.dailyCount.toLocaleString()} Completed</td>
+            <td style="padding:8px; color:#fbbf24;">LV.${row.level || 1}</td>
+            <td style="padding:8px; color:#4ade80;">Zone ${row.zone || 1}</td>
+          </tr>
+        `;
+      }
 
       return `
         <tr style="border-bottom:1px solid #2b3a30; background:${isMe ? "rgba(217, 119, 6, 0.2)" : "transparent"};">
@@ -2815,6 +3086,7 @@
         level: state.level,
         gold: state.gold,
         parkourMaster: Boolean(state.parkourMaster),
+        dailyChallengesCompleted: Number(state.dailyChallengesCompleted || 0),
         updatedAt: Date.now()
       });
     }
@@ -2832,7 +3104,7 @@
     if (currentUser && loggedInAlias) {
       formWrap.style.display = "none";
       loggedInWrap.style.display = "flex";
-      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Full progress, add-ons, badges &amp; scores auto-save to your account!`;
+      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> (Daily Completed: <b style="color:#38bdf8;">${state.dailyChallengesCompleted || 0}</b>) — Progress, badges &amp; scores auto-save!`;
       if (showcase) showcase.style.display = state.parkourMaster ? "block" : "none";
     } else {
       formWrap.style.display = "flex";
@@ -2926,7 +3198,8 @@
 
   game.querySelector("#syncScoreBtn").addEventListener("click", () => {
     syncAccountToCloud();
-    addLog("☁️ Synced full save, badges & score to your account!");
+    updateAuthBanner();
+    addLog("☁️ Synced full save, daily challenges, badges & score to your account!");
   });
 
   game.querySelector("#resetSaveBtn").addEventListener("click", () => {
