@@ -35,6 +35,94 @@
     }
   };
 
+  // Quarry Bosses Catalog (Spawn every 3 Zones or via Summon Boss)
+  const BOSS_CATALOG = [
+    {
+      id: "granite_gorgon",
+      name: "GORGON THE GRANITE GOLEM",
+      emoji: "👹",
+      color: "#f97316",
+      baseHp: 140,
+      baseAtk: 10,
+      speed: 1.15,
+      xp: 85,
+      gold: 95,
+      gems: 6,
+      relicId: "granite_heart"
+    },
+    {
+      id: "magma_ignis",
+      name: "MAGMA WYRM IGNIS",
+      emoji: "🐉",
+      color: "#ef4444",
+      baseHp: 210,
+      baseAtk: 14,
+      speed: 1.55,
+      xp: 130,
+      gold: 160,
+      gems: 10,
+      relicId: "wyrm_scale"
+    },
+    {
+      id: "crystal_sovereign",
+      name: "CRYSTAL SOVEREIGN",
+      emoji: "👾",
+      color: "#38bdf8",
+      baseHp: 300,
+      baseAtk: 18,
+      speed: 1.3,
+      xp: 190,
+      gold: 260,
+      gems: 16,
+      relicId: "sovereign_prism"
+    },
+    {
+      id: "void_kronos",
+      name: "VOID TITAN KRONOS",
+      emoji: "👑",
+      color: "#c084fc",
+      baseHp: 420,
+      baseAtk: 24,
+      speed: 1.4,
+      xp: 280,
+      gold: 420,
+      gems: 25,
+      relicId: "void_crown"
+    }
+  ];
+
+  // Permanent Rare Boss Relics
+  const BOSS_RELICS = {
+    granite_heart: {
+      id: "granite_heart",
+      name: "Granite Heart",
+      emoji: "🫀",
+      color: "#f97316",
+      bonusText: "+60 Max HP & +8 ATK"
+    },
+    wyrm_scale: {
+      id: "wyrm_scale",
+      name: "Wyrmfire Scale",
+      emoji: "🔥",
+      color: "#ef4444",
+      bonusText: "+20% Sell Value & +0.35 Speed"
+    },
+    sovereign_prism: {
+      id: "sovereign_prism",
+      name: "Sovereign Prism",
+      emoji: "💠",
+      color: "#38bdf8",
+      bonusText: "+15% Egg Chance & +20% XP"
+    },
+    void_crown: {
+      id: "void_crown",
+      name: "Kronos Void Crown",
+      emoji: "👑",
+      color: "#c084fc",
+      bonusText: "+25 ATK, +100 HP & +25% Sell Value"
+    }
+  };
+
   // Smashcenter Add-Ons Catalog (Blueprints bought from Hudson -> Crafted with Ores)
   const ADDON_CATALOG = {
     refinery: {
@@ -87,7 +175,7 @@
     }
   };
 
-  // Quarry Pets Catalog
+  // Quarry Pets Catalog (Including Mythic Boss-Exclusive Pyre Drake!)
   const PET_CATALOG = {
     potato_rock: {
       id: "potato_rock",
@@ -136,6 +224,19 @@
       hpBonus: 20,
       speedBonus: 0.4,
       lootBonus: 0.25
+    },
+    pyre_drake: {
+      id: "pyre_drake",
+      name: "Pyre Drake",
+      rarity: "Mythic (Boss Drop)",
+      color: "#f43f5e",
+      bossOnly: true,
+      desc: "Rare Quarry Boss companion! Adds +22 ATK, +45 Max HP, +0.5 Speed & +20% Gold.",
+      hatchWeight: 0,
+      atkBonus: 22,
+      hpBonus: 45,
+      speedBonus: 0.5,
+      lootBonus: 0.20
     }
   };
 
@@ -345,6 +446,14 @@
     iron: 0,
     gems: 0,
     eggs: 0,
+    bossKills: 0,
+    bossRelics: {
+      granite_heart: false,
+      wyrm_scale: false,
+      sovereign_prism: false,
+      void_crown: false
+    },
+    boss: null,
     blueprints: {
       refinery: false,
       drill: false,
@@ -362,7 +471,8 @@
       potato_rock: 0,
       chungo: 0,
       slab: 0,
-      grail: 0
+      grail: 0,
+      pyre_drake: 0
     },
     equippedPet: null,
     armorCost: 25,
@@ -410,6 +520,8 @@
       iron: state.iron,
       gems: state.gems,
       eggs: state.eggs,
+      bossKills: state.bossKills,
+      bossRelics: state.bossRelics,
       blueprints: state.blueprints,
       addons: state.addons,
       ownedPets: state.ownedPets,
@@ -448,6 +560,14 @@
       if (typeof data.iron === "number") state.iron = Math.max(0, data.iron);
       if (typeof data.gems === "number") state.gems = Math.max(0, data.gems);
       if (typeof data.eggs === "number") state.eggs = Math.max(0, data.eggs);
+      if (typeof data.bossKills === "number") state.bossKills = Math.max(0, data.bossKills);
+
+      state.bossRelics = { granite_heart: false, wyrm_scale: false, sovereign_prism: false, void_crown: false };
+      if (data.bossRelics && typeof data.bossRelics === "object") {
+        for (const k of Object.keys(state.bossRelics)) {
+          state.bossRelics[k] = Boolean(data.bossRelics[k]);
+        }
+      }
 
       state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false };
       if (data.blueprints && typeof data.blueprints === "object") {
@@ -465,6 +585,7 @@
         }
       }
 
+      state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0, pyre_drake: 0 };
       if (data.ownedPets && typeof data.ownedPets === "object") {
         for (const k of Object.keys(state.ownedPets)) {
           if (typeof data.ownedPets[k] === "number") state.ownedPets[k] = Math.max(0, data.ownedPets[k]);
@@ -506,9 +627,12 @@
     state.iron = 0;
     state.gems = 0;
     state.eggs = 0;
+    state.bossKills = 0;
+    state.bossRelics = { granite_heart: false, wyrm_scale: false, sovereign_prism: false, void_crown: false };
+    state.boss = null;
     state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false };
     state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0 };
-    state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0 };
+    state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0, pyre_drake: 0 };
     state.equippedPet = null;
     state.armorCost = 25;
     state.bootsCost = 30;
@@ -532,25 +656,29 @@
   function getTotalAtk() {
     const pet = getActivePet();
     const beaconBonus = (state.addons.beacon || 0) * 18;
-    return getActiveChar().baseAtk + getActivePickaxe().atkBonus + (state.level - 1) * 2 + (pet ? pet.atkBonus : 0) + beaconBonus;
+    const relicBonus = (state.bossRelics.granite_heart ? 8 : 0) + (state.bossRelics.void_crown ? 25 : 0);
+    return getActiveChar().baseAtk + getActivePickaxe().atkBonus + (state.level - 1) * 2 + (pet ? pet.atkBonus : 0) + beaconBonus + relicBonus;
   }
 
   function getTotalMaxHp() {
     const pet = getActivePet();
     const beaconBonus = (state.addons.beacon || 0) * 50;
-    return getActiveChar().baseHp + state.bonusHp + (state.level - 1) * 15 + (pet ? pet.hpBonus : 0) + beaconBonus;
+    const relicBonus = (state.bossRelics.granite_heart ? 60 : 0) + (state.bossRelics.void_crown ? 100 : 0);
+    return getActiveChar().baseHp + state.bonusHp + (state.level - 1) * 15 + (pet ? pet.hpBonus : 0) + beaconBonus + relicBonus;
   }
 
   function getTotalSpeed() {
     const pet = getActivePet();
     const beaconBonus = (state.addons.beacon || 0) * 0.4;
-    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0) + beaconBonus;
+    const relicBonus = state.bossRelics.wyrm_scale ? 0.35 : 0;
+    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0) + beaconBonus + relicBonus;
   }
 
   function getTotalLootMult() {
     const pet = getActivePet();
     const refineryBonus = (state.addons.refinery || 0) * 0.25;
-    return getActiveChar().lootMult + (pet ? pet.lootBonus : 0) + refineryBonus;
+    const relicBonus = (state.bossRelics.wyrm_scale ? 0.20 : 0) + (state.bossRelics.void_crown ? 0.25 : 0);
+    return getActiveChar().lootMult + (pet ? pet.lootBonus : 0) + refineryBonus + relicBonus;
   }
 
   function getSellValue() {
@@ -589,10 +717,10 @@
     state.floatingTexts.push({ x, y, text, color, life: 48 });
   }
 
-  function spawnRockParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
+  function spawnRockParticles(x, y, color, count = 8) {
+    for (let i = 0; i < count; i++) {
       const ang = Math.random() * Math.PI * 2;
-      const spd = 1 + Math.random() * 2.8;
+      const spd = 1 + Math.random() * 3.2;
       state.particles.push({
         x: Math.round(x),
         y: Math.round(y),
@@ -600,13 +728,13 @@
         vy: Math.sin(ang) * spd,
         size: 4,
         color,
-        life: 22 + Math.random() * 10
+        life: 22 + Math.random() * 12
       });
     }
   }
 
   function gainXp(amount) {
-    const incMult = 1 + (state.addons.incubator || 0) * 0.15;
+    const incMult = 1 + (state.addons.incubator || 0) * 0.15 + (state.bossRelics.sovereign_prism ? 0.20 : 0);
     state.xp += Math.round(amount * incMult);
     while (state.xp >= state.nextXp) {
       state.xp -= state.nextXp;
@@ -617,6 +745,110 @@
       addLog(`LEVEL UP! ${getActiveChar().name} reached LV.${state.level}!`);
       addFloatingText(state.player.x, state.player.y - 24, "LEVEL UP!", "#38bdf8");
     }
+  }
+
+  // =========================================================
+  // QUARRY BOSS SPAWNING & RARE BOSS DROPS
+  // =========================================================
+  function spawnQuarryBoss(customX = null, customY = null) {
+    const bossIdx = Math.floor((Math.max(1, state.floor) - 1) / 3) % BOSS_CATALOG.length;
+    const template = BOSS_CATALOG[bossIdx];
+    const scale = 1 + (state.floor - 1) * 0.28;
+
+    const bx = customX !== null ? customX : TILE * (COLS - 5);
+    const by = customY !== null ? customY : TILE * (ROWS - 5);
+
+    // Clear a small arena around the boss so it doesn't get stuck inside boulders
+    const br = Math.floor(by / TILE);
+    const bc = Math.floor(bx / TILE);
+    for (let r = br - 1; r <= br + 1; r++) {
+      for (let c = bc - 1; c <= bc + 1; c++) {
+        if (state.grid[r] && state.grid[r][c] && state.grid[r][c].type === "rock" && !state.grid[r][c].hasGate) {
+          state.grid[r][c] = { type: "ground", variant: (r + c) % 3 };
+        }
+      }
+    }
+
+    const maxHp = Math.round(template.baseHp * scale);
+    state.boss = {
+      ...template,
+      x: bx,
+      y: by,
+      hp: maxHp,
+      maxHp,
+      atk: Math.round(template.baseAtk * (1 + (state.floor - 1) * 0.18)),
+      slamTimer: 0,
+      slamWindup: 0,
+      hitFlash: 0
+    };
+
+    addLog(`👹 BOSS ALERT: ${template.name} (${maxHp} HP) has appeared!`);
+    addFloatingText(state.player.x, state.player.y - 34, `BOSS: ${template.name}!`, template.color);
+    updateUI();
+  }
+
+  function handleBossDefeated(boss) {
+    const mult = getTotalLootMult();
+    state.bossKills += 1;
+    state.boss = null;
+
+    spawnRockParticles(boss.x, boss.y, boss.color, 26);
+    addLog(`🏆 DEFEATED ${boss.name}! (+${boss.xp} XP)`);
+    addFloatingText(boss.x, boss.y - 24, "BOSS DEFEATED!", "#fbbf24");
+    gainXp(boss.xp);
+
+    // Guaranteed Gold, Gems & Quarry Eggs
+    const goldDrop = Math.round(boss.gold * (1 + (state.floor - 1) * 0.2) * mult);
+    const gemDrop = Math.ceil(boss.gems * mult);
+    state.drops.push({ x: boss.x - 14, y: boss.y, type: "gold", amount: goldDrop, emoji: "💰" });
+    state.drops.push({ x: boss.x + 14, y: boss.y, type: "gem", amount: gemDrop, emoji: "💎" });
+    state.drops.push({ x: boss.x, y: boss.y - 12, type: "egg", amount: 1, emoji: "🥚" });
+
+    // Rare Drop 1: Signature Permanent Boss Relic (75% chance if not owned yet)
+    const relic = BOSS_RELICS[boss.relicId];
+    if (relic && !state.bossRelics[relic.id] && Math.random() < 0.75) {
+      state.bossRelics[relic.id] = true;
+      state.maxHp = getTotalMaxHp();
+      state.hp = Math.min(state.maxHp, state.hp + 60);
+      addLog(`👑 RARE BOSS RELIC DROPPED: ${relic.emoji} ${relic.name} (${relic.bonusText})!`);
+      addFloatingText(boss.x, boss.y - 42, `RELIC: ${relic.name.toUpperCase()}!`, relic.color);
+    }
+
+    // Rare Drop 2: Mythic Boss-Exclusive Pet (Pyre Drake - 30% chance)
+    if (Math.random() < 0.30) {
+      state.ownedPets.pyre_drake = (state.ownedPets.pyre_drake || 0) + 1;
+      if (!state.equippedPet) {
+        state.equippedPet = "pyre_drake";
+        state.maxHp = getTotalMaxHp();
+        state.hp = Math.min(state.maxHp, state.hp + 45);
+      }
+      addLog(`🐉 MYTHIC BOSS DROP: Pyre Drake companion joined your Pen!`);
+      addFloatingText(boss.x, boss.y - 58, "MYTHIC PET: PYRE DRAKE!", "#f43f5e");
+    }
+
+    saveProgress();
+    updateUI();
+  }
+
+  function renderBossRelicsUI() {
+    const listEl = game.querySelector("#bossRelicsList");
+    const countEl = game.querySelector("#relicCount");
+    if (!listEl) return;
+
+    const owned = Object.values(BOSS_RELICS).filter((r) => state.bossRelics[r.id]);
+    if (countEl) countEl.textContent = owned.length;
+
+    if (owned.length === 0) {
+      listEl.innerHTML = `<span class="rarity-tag" style="color:#6b7280;">Defeat Bosses for Relics</span>`;
+      return;
+    }
+
+    listEl.innerHTML = owned
+      .map(
+        (r) =>
+          `<span class="rarity-tag" title="${r.bonusText}" style="color:${r.color}; border-color:${r.color};"><span class="emoji-color">${r.emoji}</span> ${r.name}</span>`
+      )
+      .join("");
   }
 
   // =========================================================
@@ -701,7 +933,6 @@
         : "Active Base Structures: None yet";
     }
 
-    // 1. Hudson's Blueprints Storefront
     if (bpGrid) {
       bpGrid.innerHTML = "";
       for (const cfg of Object.values(ADDON_CATALOG)) {
@@ -724,7 +955,6 @@
       }
     }
 
-    // 2. Smashcenter Add-Ons Crafting Workshop
     if (wsGrid) {
       wsGrid.innerHTML = "";
       for (const cfg of Object.values(ADDON_CATALOG)) {
@@ -778,7 +1008,7 @@
     if (state.eggs <= 0) return;
     state.eggs -= 1;
 
-    const list = Object.values(PET_CATALOG);
+    const list = Object.values(PET_CATALOG).filter((p) => !p.bossOnly);
     const totalWeight = list.reduce((sum, p) => sum + p.hatchWeight, 0);
     let roll = Math.random() * totalWeight;
     let hatched = list[0];
@@ -838,7 +1068,7 @@
           <div style="font-size:12px; color:#cbd5e1; margin-top:6px;">${pet.desc}</div>
         </div>
         <button class="mini-btn ${isEquipped ? "secondary" : ""}" ${count === 0 ? "disabled" : ""}>
-          ${count === 0 ? "LOCKED (HATCH EGGS)" : isEquipped ? "★ EQUIPPED" : "EQUIP COMPANION"}
+          ${count === 0 ? (pet.bossOnly ? "LOCKED (DEFEAT BOSSES)" : "LOCKED (HATCH EGGS)") : isEquipped ? "★ EQUIPPED" : "EQUIP COMPANION"}
         </button>
       `;
 
@@ -877,6 +1107,7 @@
     state.enemies = [];
     state.drops = [];
     state.particles = [];
+    state.boss = null;
 
     state.player.x = TILE * 2.5;
     state.player.y = TILE * 2.5;
@@ -955,6 +1186,11 @@
       state.grid.push(row);
     }
 
+    // Automatically spawn a Quarry Boss every 3rd Zone!
+    if (state.floor % 3 === 0) {
+      spawnQuarryBoss(gateC * TILE + TILE / 2, gateR * TILE + TILE / 2);
+    }
+
     updateUI();
   }
 
@@ -980,6 +1216,17 @@
     game.querySelector("#hatchEggCount").textContent = state.eggs;
     game.querySelector("#btnEggCount").textContent = state.eggs;
     game.querySelector("#sideEggCount").textContent = state.eggs;
+
+    const summonBtn = game.querySelector("#summonBossBtn");
+    if (summonBtn) {
+      if (state.boss) {
+        summonBtn.innerHTML = `<span class="emoji-color">👹</span> Boss Active!`;
+        summonBtn.disabled = true;
+      } else {
+        summonBtn.innerHTML = `<span class="emoji-color">👹</span> Summon Boss (15 STN)`;
+        summonBtn.disabled = state.stone < 15;
+      }
+    }
 
     const sidePet = game.querySelector("#sidePetLabel");
     const eqPetName = game.querySelector("#equippedPetName");
@@ -1031,6 +1278,7 @@
     game.querySelector("#sideHatchBtn").disabled = state.eggs <= 0;
     game.querySelector("#unequipPetBtn").disabled = !state.equippedPet;
 
+    renderBossRelicsUI();
     renderAddonsUI();
     renderPetRoster();
   }
@@ -1083,7 +1331,7 @@
           });
         }
 
-        const eggBonus = (state.addons.incubator || 0) * 0.12;
+        const eggBonus = (state.addons.incubator || 0) * 0.12 + (state.bossRelics.sovereign_prism ? 0.15 : 0);
         if (Math.random() < Math.min(1, cell.rarity.eggChance + eggBonus)) {
           state.drops.push({
             x: cx,
@@ -1112,6 +1360,19 @@
     const hitX = state.player.x + state.player.dirX * reach;
     const hitY = state.player.y + state.player.dirY * reach;
 
+    // Hit Quarry Boss if in reach
+    if (state.boss && Math.hypot(state.boss.x - hitX, state.boss.y - hitY) < 58) {
+      const b = state.boss;
+      b.hp -= totalAtk;
+      b.hitFlash = 8;
+      spawnRockParticles(b.x, b.y, b.color, 10);
+      addFloatingText(b.x, b.y - 26, `-${totalAtk}`, "#fbbf24");
+      if (b.hp <= 0) {
+        handleBossDefeated(b);
+      }
+    }
+
+    // Hit Wildlife
     for (let i = state.enemies.length - 1; i >= 0; i--) {
       const e = state.enemies[i];
       if (Math.hypot(e.x - hitX, e.y - hitY) < 44) {
@@ -1218,21 +1479,31 @@
     const lookR = Math.floor((p.y + p.dirY * 42) / TILE);
     const lookC = Math.floor((p.x + p.dirX * 42) / TILE);
     const targetInfo = game.querySelector("#targetRockInfo");
-    if (state.grid[lookR] && state.grid[lookR][lookC] && state.grid[lookR][lookC].type === "rock") {
+    if (state.boss && Math.hypot(state.boss.x - p.x, state.boss.y - p.y) < 120) {
+      targetInfo.innerHTML = `<span style="color:${state.boss.color}; font-weight:900;">[BOSS: ${state.boss.hp}/${state.boss.maxHp} HP]</span>`;
+    } else if (state.grid[lookR] && state.grid[lookR][lookC] && state.grid[lookR][lookC].type === "rock") {
       const rk = state.grid[lookR][lookC];
       targetInfo.innerHTML = `<span style="color:${rk.rarity.color}; font-weight:900;">[${rk.rarity.label.toUpperCase()}]</span> (${rk.hp}/${rk.maxHp} HP)`;
     } else {
       targetInfo.textContent = "Walk near a rock";
     }
 
+    // Zone Gate check (locked while a Boss is alive)
     const pr = Math.floor(p.y / TILE);
     const pc = Math.floor(p.x / TILE);
     if (state.grid[pr] && state.grid[pr][pc] && state.grid[pr][pc].type === "gate") {
-      state.floor += 1;
-      addLog(`⛰️ Entered Zone ${state.floor}! Higher Galactic & Apex odds!`);
-      saveProgress();
-      generateFloor();
-      return;
+      if (state.boss) {
+        if (p.invuln === 0) {
+          addFloatingText(p.x, p.y - 22, "DEFEAT BOSS FIRST!", "#f87171");
+          p.invuln = 30;
+        }
+      } else {
+        state.floor += 1;
+        addLog(`⛰️ Entered Zone ${state.floor}! Higher Galactic & Apex odds!`);
+        saveProgress();
+        generateFloor();
+        return;
+      }
     }
 
     for (let i = state.drops.length - 1; i >= 0; i--) {
@@ -1253,6 +1524,63 @@
         state.drops.splice(i, 1);
         saveProgress();
         updateUI();
+      }
+    }
+
+    // Quarry Boss AI & Telegraphed Seismic Slam
+    if (state.boss) {
+      const b = state.boss;
+      if (b.hitFlash > 0) b.hitFlash--;
+      const dist = Math.hypot(p.x - b.x, p.y - b.y);
+
+      if (b.slamWindup > 0) {
+        b.slamWindup--;
+        if (b.slamWindup === 0) {
+          spawnRockParticles(b.x, b.y, b.color, 18);
+          if (dist < 110 && p.invuln === 0) {
+            const slamDmg = Math.round(b.atk * 1.45);
+            state.hp -= slamDmg;
+            p.invuln = 45;
+            addFloatingText(p.x, p.y - 22, `-${slamDmg} SLAM!`, "#ef4444");
+            if (state.hp <= 0) {
+              addLog(`💀 ${getActiveChar().name} was crushed by ${b.name}! Returned to Zone 1 Camp.`);
+              state.floor = 1;
+              state.hp = state.maxHp;
+              saveProgress();
+              generateFloor();
+              return;
+            }
+            updateUI();
+          }
+        }
+      } else {
+        if (dist < 320 && dist > 26) {
+          const vx = ((p.x - b.x) / dist) * b.speed;
+          const vy = ((p.y - b.y) / dist) * b.speed;
+          if (!isTileBlocked(b.x + vx, b.y)) b.x += vx;
+          if (!isTileBlocked(b.x, b.y + vy)) b.y += vy;
+        }
+        if (dist < 140) {
+          b.slamTimer++;
+          if (b.slamTimer >= 165) {
+            b.slamTimer = 0;
+            b.slamWindup = 48;
+          }
+        }
+        if (dist < 34 && p.invuln === 0) {
+          state.hp -= b.atk;
+          p.invuln = 45;
+          addFloatingText(p.x, p.y - 20, `-${b.atk} HP`, "#ef4444");
+          if (state.hp <= 0) {
+            addLog(`💀 ${getActiveChar().name} fainted against ${b.name}! Returned to Zone 1 Camp.`);
+            state.floor = 1;
+            state.hp = state.maxHp;
+            saveProgress();
+            generateFloor();
+            return;
+          }
+          updateUI();
+        }
       }
     }
 
@@ -1309,7 +1637,6 @@
       ctx.save();
       ctx.translate(x, y);
 
-      // Base pad
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.fillRect(-16, 8, 32, 8);
       ctx.fillStyle = "#1e293b";
@@ -1318,7 +1645,6 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(-14, -10, 28, 22);
 
-      // Structure icon + glowing accent
       ctx.fillStyle = "#ffffff";
       ctx.font = EMOJI_FONT(20);
       ctx.textAlign = "center";
@@ -1400,6 +1726,20 @@
       ctx.fillStyle = "#fef08a";
       ctx.fillRect(-1, -1, 2, 2);
       ctx.fillRect(4, -1, 2, 2);
+    } else if (pet.id === "pyre_drake") {
+      // Mythic Boss Pet: Pyre Drake
+      ctx.fillStyle = "#991b1b";
+      ctx.fillRect(-12, -4, 6, 6);
+      ctx.fillRect(6, -4, 6, 6);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(-7, -8, 14, 14);
+      ctx.fillStyle = "#f97316";
+      ctx.fillRect(-5, -6, 10, 10);
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(-3, -2, 6, 5);
+      ctx.fillStyle = "#fef08a";
+      ctx.fillRect(-4, -5, 2, 2);
+      ctx.fillRect(2, -5, 2, 2);
     }
 
     ctx.font = "bold 9px 'Courier New', monospace";
@@ -1498,16 +1838,17 @@
             ctx.fillRect(x + 8, y + TILE - 7, Math.max(2, Math.floor((TILE - 16) * (cell.hp / cell.maxHp))), 2);
           }
         } else if (cell.type === "gate") {
-          ctx.fillStyle = "#14532d";
+          const locked = Boolean(state.boss);
+          ctx.fillStyle = locked ? "#450a0a" : "#14532d";
           ctx.fillRect(x + 6, y + 6, TILE - 12, TILE - 12);
-          ctx.strokeStyle = "#4ade80";
+          ctx.strokeStyle = locked ? "#f87171" : "#4ade80";
           ctx.lineWidth = 3;
           ctx.strokeRect(x + 6, y + 6, TILE - 12, TILE - 12);
           ctx.fillStyle = "#ffffff";
           ctx.font = EMOJI_FONT(24);
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillText("🪜", x + TILE / 2, y + TILE / 2);
+          ctx.fillText(locked ? "🔒" : "🪜", x + TILE / 2, y + TILE / 2);
         }
       }
     }
@@ -1566,13 +1907,47 @@
       ctx.fillRect(Math.round(e.x) - 15, Math.round(e.y) - 21, Math.round(30 * (e.hp / e.maxHp)), 3);
     }
 
-    // 8. Equipped Quarry Pet Companion
+    // 8. Quarry Boss (Large Sprite + Slam Warning Ring)
+    if (state.boss) {
+      const b = state.boss;
+      const bx = Math.round(b.x);
+      const by = Math.round(b.y);
+
+      // Telegraphed Seismic Slam Warning Ring
+      if (b.slamWindup > 0) {
+        ctx.save();
+        ctx.strokeStyle = b.slamWindup % 6 < 3 ? "#ef4444" : "#facc15";
+        ctx.lineWidth = 3;
+        ctx.fillStyle = "rgba(239, 68, 68, 0.18)";
+        ctx.beginPath();
+        ctx.arc(bx, by, 110, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Boss Aura Shadow
+      ctx.fillStyle = "rgba(0,0,0,0.45)";
+      ctx.fillRect(bx - 22, by + 16, 44, 10);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = EMOJI_FONT(44);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(b.emoji, bx, by);
+
+      ctx.font = "bold 10px 'Courier New', monospace";
+      ctx.fillStyle = b.color;
+      ctx.fillText("★ BOSS ★", bx, by - 30);
+    }
+
+    // 9. Equipped Quarry Pet Companion
     const activePet = getActivePet();
     if (activePet) {
       drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
     }
 
-    // 9. Player + Material-Colored Pixel Pickaxe
+    // 10. Player + Material-Colored Pixel Pickaxe
     const p = state.player;
     const ch = getActiveChar();
     const pick = getActivePickaxe();
@@ -1610,7 +1985,7 @@
 
     ctx.restore();
 
-    // 10. Square Pixel Particles & Floating Text
+    // 11. Square Pixel Particles & Floating Text
     for (const pt of state.particles) {
       ctx.fillStyle = pt.color;
       ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size);
@@ -1625,6 +2000,33 @@
     }
 
     ctx.restore();
+
+    // 12. Top-of-Screen Boss Health Bar HUD (Screen Space)
+    if (state.boss) {
+      const b = state.boss;
+      const barW = Math.min(420, canvas.width - 32);
+      const barX = Math.round((canvas.width - barW) / 2);
+      const barY = 12;
+
+      ctx.fillStyle = "rgba(9, 13, 10, 0.88)";
+      ctx.fillRect(barX - 4, barY - 4, barW + 8, 34);
+      ctx.strokeStyle = b.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(barX - 4, barY - 4, barW + 8, 34);
+
+      ctx.fillStyle = "#1f2937";
+      ctx.fillRect(barX, barY + 14, barW, 10);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(barX, barY + 14, Math.max(2, Math.round(barW * (Math.max(0, b.hp) / b.maxHp))), 10);
+
+      ctx.font = "bold 11px 'Courier New', monospace";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(`${b.emoji} ${b.name}`, barX + 2, barY);
+      ctx.textAlign = "right";
+      ctx.fillText(`${Math.max(0, b.hp)}/${b.maxHp} HP`, barX + barW - 2, barY);
+    }
   }
 
   let animId;
@@ -1693,16 +2095,17 @@
 
   // Prospector Phil Dialogue Topics
   const philTips = {
+    bosses: "\"A Quarry Boss spawns automatically on every 3rd Zone (Zones 3, 6, 9…), or you can click Summon Boss for 15 Stone! Watch out for their red slam ring—defeating bosses drops permanent Boss Relics and the Mythic Pyre Drake pet!\"",
     addons: "\"Buy Add-On Blueprints from Hudson with Gold, then switch to the Add-Ons tab to craft and upgrade them with Stone, Iron, and Gems! Each built Add-On appears right in your Smashcenter Base Camp!\"",
-    pets: "\"Smashing rocks can drop Quarry Eggs! Hatch them in the Pets tab to unlock 4 companions: Potato Rock (+15% Gold & Ores), Chungo the quartz Diglett (+Speed), Slab (+6 ATK & +35 HP), and Grail the mini meteor (+15 ATK & +25% Gold)!\"",
+    pets: "\"Smashing rocks drops Quarry Eggs for 4 companions (Potato Rock, Chungo, Slab, Grail), and defeating Quarry Bosses can drop the Mythic Pyre Drake (+22 ATK, +45 HP, +20% Loot)!\"",
     rarities: "\"There are 11 rock tiers out here: Common, Uncommon, Rare, Epic, Mythic, Exotic, Secret, Divine, Galactic, Glitched, and Apex Purple! Higher-tier rocks also have a much higher chance to drop Quarry Eggs!\"",
     materials: "\"Visit Hudson's Shop to upgrade your pickaxe material from Wood → Stone → Copper → Iron → Gold → Diamond → Obsidian → Mythril → Voidsteel → Celestial → Apex Purple Pickaxe!\"",
-    zones: "\"Every quarry zone conceals a wooden ladder under one rock. Advance to deeper zones to boost your odds of uncovering Galactic, Glitched, and Apex Purple boulders!\"",
-    crew: "\"All-Rounder Neil gets +30% Gold and ores, Xavier swings with extra power and HP to crack high-tier rocks fast, and Carter sprints across the quarry at top speed!\"",
+    zones: "\"Every quarry zone conceals a wooden ladder under one rock. On Boss Zones, you must defeat the Quarry Boss to unlock the gate!\"",
+    crew: "\"All-Rounder Neil gets +30% Gold and ores, Xavier swings with extra power and HP to crack bosses and high-tier rocks fast, and Carter sprints across the quarry to dodge boss slams!\"",
     random: [
-      "\"Prospector Note #104: Don't sell all your Stone and Iron right away—you need them to build the Ore Refinery and Auto-Chop Drill in the Add-Ons tab!\"",
-      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with the Ore Refinery (+25%/lv) and Potato Rock (+15%) for huge payouts at Hudson's Shop!\"",
-      "\"Prospector Note #312: Log into a Miner Account in the Leaderboard tab to cloud-save all your pickaxes, built add-ons, and pets across devices!\""
+      "\"Prospector Note #104: Collect all 4 Rare Boss Relics (Granite Heart, Wyrmfire Scale, Sovereign Prism, Kronos Void Crown) for permanent passive stat boosts!\"",
+      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with the Ore Refinery (+25%/lv) and Wyrmfire Scale (+20%) for massive payouts at Hudson's Shop!\"",
+      "\"Prospector Note #312: Log into a Miner Account in the Leaderboard tab to cloud-save all your pickaxes, built add-ons, boss relics, and pets across devices!\""
     ]
   };
 
@@ -1779,6 +2182,16 @@
     swingPickaxe();
   });
 
+  // Summon Boss Button
+  game.querySelector("#summonBossBtn").addEventListener("click", () => {
+    if (state.boss || state.stone < 15) return;
+    state.stone -= 15;
+    const sx = Math.min(TILE * (COLS - 3), state.player.x + TILE * 4);
+    const sy = Math.min(TILE * (ROWS - 3), state.player.y + TILE * 2);
+    spawnQuarryBoss(sx, sy);
+    saveProgress();
+  });
+
   // Hudson Shop, Hatchery & Save Actions
   function sellAllOres() {
     const earned = getSellValue();
@@ -1811,7 +2224,7 @@
     if (!nextPick || state.gold < nextPick.cost) return;
     state.gold -= nextPick.cost;
     state.pickTier += 1;
-    game.querySelector("#hudsonSpeech").textContent = `"Fresh off the anvil! Your new ${nextPick.name} will tear right through rare formations!"`;
+    game.querySelector("#hudsonSpeech").textContent = `"Fresh off the anvil! Your new ${nextPick.name} will tear right through bosses and rare formations!"`;
     addLog(`Forged ${nextPick.name}! Total ATK: ${getTotalAtk()}.`);
     saveProgress();
     updateUI();
@@ -1835,7 +2248,7 @@
     state.gold -= state.bootsCost;
     state.bonusSpeed += 0.45;
     state.bootsCost = Math.round(state.bootsCost * 1.55);
-    game.querySelector("#hudsonSpeech").textContent = `"Light as a feather! You'll sprint across the quarry."`;
+    game.querySelector("#hudsonSpeech").textContent = `"Light as a feather! You'll sprint right out of Boss slam rings."`;
     addLog("Upgraded Trail Runner Boots!");
     saveProgress();
     updateUI();
@@ -1950,7 +2363,7 @@
     if (currentUser && loggedInAlias) {
       formWrap.style.display = "none";
       loggedInWrap.style.display = "flex";
-      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Full progress, add-ons &amp; scores auto-save to your account!`;
+      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Full progress, add-ons, boss relics &amp; scores auto-save to your account!`;
     } else {
       formWrap.style.display = "flex";
       loggedInWrap.style.display = "none";

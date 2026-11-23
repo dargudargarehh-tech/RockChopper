@@ -18,7 +18,7 @@
         <h1 class="hero-logo">
           <span class="hero-logo-text">ROCK CHOPPER</span>
         </h1>
-        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons from blueprints, and hatch rock pets from quarry eggs.</p>
+        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons from blueprints, battle Quarry Bosses for rare relics, and hatch rock pets.</p>
 
         <div class="char-grid">
           <div class="char-card selected" data-char="neil">
@@ -114,6 +114,7 @@
           <div class="controls-bar">
             <span>Move: <b>WASD / Arrows / D-Pad</b> • Chop: <b>Space / Click / CHOP</b> • Find <span class="emoji-color">🪜</span> <b>Gate</b></span>
             <div style="display:flex; gap:6px;">
+              <button class="mini-btn secondary" id="summonBossBtn" style="background:#7f1d1d; border-color:#f87171;"><span class="emoji-color">👹</span> Summon Boss (15 STN)</button>
               <button class="mini-btn" id="newFloorBtn"><span class="emoji-color">🔄</span> New Quarry</button>
             </div>
           </div>
@@ -155,7 +156,7 @@
                 <div class="shop-item">
                   <div>
                     <div style="font-weight:900; font-size:15px; color:#4ade80;"><span class="emoji-color">🦺</span> REINFORCED FIELD VEST</div>
-                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Adds <b>+25 Max HP</b> to survive fierce quarry critters.</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Adds <b>+25 Max HP</b> to survive fierce quarry critters &amp; bosses.</div>
                   </div>
                   <button class="mini-btn" id="upgArmor">BUY VEST (<span id="armorCost">25</span>G)</button>
                 </div>
@@ -163,7 +164,7 @@
                 <div class="shop-item">
                   <div>
                     <div style="font-weight:900; font-size:15px; color:#f472b6;"><span class="emoji-color">🥾</span> TRAIL RUNNER BOOTS</div>
-                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Increases movement speed across the quarry.</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Increases movement speed to dodge Boss slam rings.</div>
                   </div>
                   <button class="mini-btn" id="upgBoots">UPGRADE (<span id="bootsCost">30</span>G)</button>
                 </div>
@@ -218,7 +219,7 @@
                 <div class="npc-portrait emoji-color">🥚</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">QUARRY HATCHERY &amp; PET PEN</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">SMASH BOULDERS TO FIND QUARRY EGGS</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">HATCH QUARRY EGGS OR DEFEAT BOSSES FOR MYTHIC PETS</div>
                   <div class="npc-speech" id="petHatchSpeech">
                     Quarry Eggs in Satchel: <b style="color:#fde68a;" id="hatchEggCount">0</b> &nbsp;|&nbsp;
                     Equipped Companion: <b style="color:#4ade80;" id="equippedPetName">None</b>
@@ -243,12 +244,13 @@
                 <div class="npc-portrait emoji-color">🕵️‍♂️</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — VETERAN ROCKHOUND</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">RARITY, ADD-ON &amp; MATERIAL EXPERT</div>
-                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Save some of your Stone, Iron, and Gems instead of selling them all—Hudson sells Blueprints to build Add-Ons right in Smashcenter!"</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">BOSS, RARITY, ADD-ON &amp; MATERIAL EXPERT</div>
+                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Watch out on every 3rd Zone—giant Quarry Bosses guard the gate and drop rare permanent Relics and the Mythic Pyre Drake pet!"</div>
                 </div>
               </div>
 
               <div class="tip-topics">
+                <button class="topic-btn" data-topic="bosses"><span class="emoji-color">👹</span> Quarry Bosses &amp; Relics</button>
                 <button class="topic-btn" data-topic="addons"><span class="emoji-color">🏗️</span> Add-Ons &amp; Blueprints</button>
                 <button class="topic-btn" data-topic="pets"><span class="emoji-color">🐾</span> Quarry Pets &amp; Eggs</button>
                 <button class="topic-btn" data-topic="rarities"><span class="emoji-color">🔍</span> All 11 Rarity Tiers</button>
@@ -344,6 +346,11 @@
         <div style="display:flex; gap:6px;">
           <button class="mini-btn" id="sellOresBtn" style="flex:1;"><span class="emoji-color">💰</span> Sell (<span id="sideSellPreview">0</span>G)</button>
           <button class="mini-btn secondary" id="sideHatchBtn" style="flex:1;"><span class="emoji-color">🐣</span> Hatch (<span id="sideEggCount">0</span>)</button>
+        </div>
+
+        <div style="font-weight:900; color:#f87171; font-size:12px; margin-top:2px;"><span class="emoji-color">👑</span> RARE BOSS RELICS (<span id="relicCount">0</span>/4)</div>
+        <div class="rarity-legend" id="bossRelicsList">
+          <span class="rarity-tag" style="color:#6b7280;">Defeat Bosses for Relics</span>
         </div>
 
         <div style="font-weight:900; color:#f59e0b; font-size:12px; margin-top:2px;"><span class="emoji-color">✨</span> 11 ROCK RARITIES</div>
