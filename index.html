@@ -254,13 +254,13 @@
                 <div class="npc-portrait emoji-color">🏆</div>
                 <div style="flex:1;">
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">SMASHCENTER ONLINE LEADERBOARD</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PEER-TO-PEER ACCOUNT RANKINGS</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS</div>
                   <div class="npc-speech" id="authStatusMsg">Create a Miner Account or log in to post your Zone, Level &amp; Gold online!</div>
 
                   <!-- Account Form (Shown when logged out) -->
                   <div id="authFormWrap" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
                     <input id="authUsername" type="text" maxlength="16" placeholder="Username" style="background:#0c120e; border:2px solid #4a6352; color:#fff; padding:6px 8px; font-family:inherit; font-size:12px;" />
-                    <input id="authPassword" type="password" placeholder="Password (8+ chars)" style="background:#0c120e; border:2px solid #4a6352; color:#fff; padding:6px 8px; font-family:inherit; font-size:12px;" />
+                    <input id="authPassword" type="password" placeholder="Password (6+ chars)" style="background:#0c120e; border:2px solid #4a6352; color:#fff; padding:6px 8px; font-family:inherit; font-size:12px;" />
                     <button class="mini-btn" id="signUpBtn">CREATE ACCOUNT</button>
                     <button class="mini-btn secondary" id="signInBtn">LOG IN</button>
                   </div>
@@ -346,8 +346,9 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -1550,30 +1550,39 @@
   });
 
   // =========================================================
-  // SERVERLESS ONLINE ACCOUNTS & LEADERBOARD (GUN.JS)
+  // ONLINE ACCOUNTS & GLOBAL LEADERBOARD (FIREBASE)
   // =========================================================
-  const gun = window.Gun
-    ? window.Gun({
-        peers: [
-          "https://gun.eco/gun",
-          "https://relay.peer.ooo/gun",
-          "https://gundb-relay-mlom.onrender.com/gun"
-        ],
-        localStorage: true
-      })
-    : null;
+  const firebaseConfig = {
+    apiKey: "AIzaSyDo9o2QQsl3uKZRGjKYY-tM8u1e0yE7Ph8",
+    authDomain: "rock-chopper.firebaseapp.com",
+    databaseURL: "https://rock-chopper-default-rtdb.firebaseio.com",
+    projectId: "rock-chopper",
+    storageBucket: "rock-chopper.firebasestorage.app",
+    messagingSenderId: "557568043109",
+    appId: "1:557568043109:web:f4c7c75389bb5815347e8c"
+  };
 
-  const user = gun ? gun.user().recall({ sessionStorage: true }) : null;
-  const lbNode = gun ? gun.get("rockchopper_smashcenter_lb_v2") : null;
+  if (window.firebase && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const auth = window.firebase ? firebase.auth() : null;
+  const db = window.firebase ? firebase.database() : null;
+  const lbRef = db ? db.ref("leaderboard") : null;
 
-  const lbEntries = {};
+  let currentUser = null;
   let loggedInAlias = "";
+  let lbEntries = {};
+
+  function toMinerEmail(username) {
+    return `${username.toLowerCase()}@smashcenter.game`;
+  }
 
   function renderLeaderboardTable() {
     const tbody = game.querySelector("#leaderboardBody");
     if (!tbody) return;
 
-    const list = Object.values(lbEntries)
+    const list = Object.entries(lbEntries)
+      .map(([uid, row]) => ({ uid, ...row }))
       .filter((row) => row && row.username)
       .sort((a, b) => (b.zone - a.zone) || (b.level - a.level) || (b.gold - a.gold))
       .slice(0, 25);
@@ -1584,7 +1593,7 @@
     }
 
     tbody.innerHTML = list.map((row, idx) => {
-      const isMe = loggedInAlias && row.username === loggedInAlias;
+      const isMe = currentUser && row.uid === currentUser.uid;
       const rankColor = idx === 0 ? "#fbbf24" : idx === 1 ? "#e2e8f0" : idx === 2 ? "#d97706" : "#9ca3af";
       return `
         <tr style="border-bottom:1px solid #2b3a30; background:${isMe ? "rgba(217, 119, 6, 0.2)" : "transparent"};">
@@ -1600,18 +1609,15 @@
   }
 
   function postScoreToNetwork() {
-    if (!user || !user.is || !loggedInAlias || !lbNode) return;
-    const record = {
+    if (!currentUser || !loggedInAlias || !lbRef) return;
+    lbRef.child(currentUser.uid).set({
       username: loggedInAlias,
       miner: getActiveChar().name,
       zone: state.floor,
       level: state.level,
       gold: state.gold,
       updatedAt: Date.now()
-    };
-    lbEntries[loggedInAlias] = record;
-    lbNode.get(loggedInAlias).put(record);
-    renderLeaderboardTable();
+    });
   }
 
   function updateAuthBanner() {
@@ -1619,7 +1625,7 @@
     const loggedInWrap = game.querySelector("#loggedInWrap");
     const statusMsg = game.querySelector("#authStatusMsg");
 
-    if (user && user.is && loggedInAlias) {
+    if (currentUser && loggedInAlias) {
       formWrap.style.display = "none";
       loggedInWrap.style.display = "flex";
       statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Scores auto-sync to the Smashcenter Leaderboard!`;
@@ -1631,78 +1637,68 @@
     }
   }
 
-  if (lbNode) {
-    lbNode.map().on((data, key) => {
-      if (data && data.username) {
-        lbEntries[key] = data;
-        renderLeaderboardTable();
+  if (lbRef) {
+    lbRef.on("value", (snapshot) => {
+      lbEntries = snapshot.val() || {};
+      renderLeaderboardTable();
+    }, (err) => {
+      const tbody = game.querySelector("#leaderboardBody");
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="padding:10px; color:#f87171;">Database error: ${err.message}</td></tr>`;
+    });
+  }
+
+  if (auth) {
+    auth.onAuthStateChanged((user) => {
+      currentUser = user;
+      if (user) {
+        loggedInAlias = user.displayName || user.email.split("@")[0];
+      } else {
+        loggedInAlias = "";
       }
-    });
-    // Ensure the "Connecting..." message clears even if the room is empty
-    setTimeout(renderLeaderboardTable, 2500);
-  } else {
-    const tbody = game.querySelector("#leaderboardBody");
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" style="padding:10px; color:#f87171;">Gun.js failed to load. Check your connection and refresh.</td></tr>`;
-    }
-  }
-
-  if (gun) {
-    gun.on("auth", () => {
-      user.get("alias").once((alias) => {
-        loggedInAlias = alias || game.querySelector("#authUsername").value.trim();
-        updateAuthBanner();
-      });
+      updateAuthBanner();
+      renderLeaderboardTable();
     });
   }
 
-  game.querySelector("#signUpBtn").addEventListener("click", () => {
-    if (!user) return;
+  game.querySelector("#signUpBtn").addEventListener("click", async () => {
+    if (!auth) return;
     const username = game.querySelector("#authUsername").value.trim().replace(/[^a-zA-Z0-9_-]/g, "");
     const password = game.querySelector("#authPassword").value;
-    if (username.length < 3 || password.length < 8) {
-      game.querySelector("#authStatusMsg").textContent = "Username needs 3+ letters/numbers and Password needs 8+ characters.";
+    if (username.length < 3 || password.length < 6) {
+      game.querySelector("#authStatusMsg").textContent = "Username needs 3+ letters/numbers and Password needs 6+ characters.";
       return;
     }
     game.querySelector("#authStatusMsg").textContent = "Creating Miner Account...";
-    user.create(username, password, (ack) => {
-      if (ack.err) {
-        game.querySelector("#authStatusMsg").textContent = "Account error: " + ack.err;
-        return;
-      }
-      user.auth(username, password, (loginAck) => {
-        if (!loginAck.err) {
-          loggedInAlias = username;
-          addLog(`🏆 Created Miner Account: ${username}!`);
-          updateAuthBanner();
-        }
-      });
-    });
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(toMinerEmail(username), password);
+      await cred.user.updateProfile({ displayName: username });
+      loggedInAlias = username;
+      addLog(`🏆 Created Miner Account: ${username}!`);
+      updateAuthBanner();
+    } catch (err) {
+      game.querySelector("#authStatusMsg").textContent = "Account error: " + err.message;
+    }
   });
 
-  game.querySelector("#signInBtn").addEventListener("click", () => {
-    if (!user) return;
-    const username = game.querySelector("#authUsername").value.trim();
+  game.querySelector("#signInBtn").addEventListener("click", async () => {
+    if (!auth) return;
+    const username = game.querySelector("#authUsername").value.trim().replace(/[^a-zA-Z0-9_-]/g, "");
     const password = game.querySelector("#authPassword").value;
     if (!username || !password) return;
     game.querySelector("#authStatusMsg").textContent = "Logging in...";
-    user.auth(username, password, (ack) => {
-      if (ack.err) {
-        game.querySelector("#authStatusMsg").textContent = "Login failed: " + ack.err;
-        return;
-      }
-      loggedInAlias = username;
-      addLog(`🏆 Logged in as ${username}!`);
+    try {
+      const cred = await auth.signInWithEmailAndPassword(toMinerEmail(username), password);
+      loggedInAlias = cred.user.displayName || username;
+      addLog(`🏆 Logged in as ${loggedInAlias}!`);
       updateAuthBanner();
-    });
+    } catch (err) {
+      game.querySelector("#authStatusMsg").textContent = "Login failed: " + err.message;
+    }
   });
 
-  game.querySelector("#signOutBtn").addEventListener("click", () => {
-    if (!user) return;
-    user.leave();
-    loggedInAlias = "";
-    updateAuthBanner();
-    renderLeaderboardTable();
+  game.querySelector("#signOutBtn").addEventListener("click", async () => {
+    if (!auth) return;
+    await auth.signOut();
     addLog("Logged out of Miner Account.");
   });
 
@@ -1711,13 +1707,13 @@
     addLog("📡 Posted score to Smashcenter Leaderboard!");
   });
 
-  // Auto-sync to P2P leaderboard whenever saveProgress() runs
+  // Auto-sync to Firebase whenever saveProgress() runs
   let lastNetSync = 0;
   const origSaveProgress = saveProgress;
   saveProgress = function (showNotice = false) {
     origSaveProgress(showNotice);
     const now = Date.now();
-    if (user && user.is && loggedInAlias && now - lastNetSync > 8000) {
+    if (currentUser && loggedInAlias && now - lastNetSync > 6000) {
       lastNetSync = now;
       postScoreToNetwork();
     }
