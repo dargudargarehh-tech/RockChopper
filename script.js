@@ -35,6 +35,58 @@
     }
   };
 
+  // Smashcenter Add-Ons Catalog (Blueprints bought from Hudson -> Crafted with Ores)
+  const ADDON_CATALOG = {
+    refinery: {
+      id: "refinery",
+      name: "Ore Refinery",
+      emoji: "🏭",
+      color: "#fbbf24",
+      blueprintCost: 80,
+      maxLevel: 5,
+      baseOres: { stone: 12, iron: 4, gems: 0 },
+      desc: "Smelts raw ores in Smashcenter. Increases all ore & gem sell value by +25% per level.",
+      campX: 48 * 1.35,
+      campY: 48 * 1.35
+    },
+    drill: {
+      id: "drill",
+      name: "Auto-Chop Drill",
+      emoji: "⚙️",
+      color: "#38bdf8",
+      blueprintCost: 220,
+      maxLevel: 5,
+      baseOres: { stone: 20, iron: 12, gems: 2 },
+      desc: "Sends seismic pulses every 2.5s that damage nearby rocks around you (50% ATK + 15%/lv).",
+      campX: 48 * 2.4,
+      campY: 48 * 1.35
+    },
+    incubator: {
+      id: "incubator",
+      name: "Egg Incubator",
+      emoji: "🌡️",
+      color: "#4ade80",
+      blueprintCost: 450,
+      maxLevel: 5,
+      baseOres: { stone: 15, iron: 18, gems: 8 },
+      desc: "Boosts Quarry Egg drop chance by +12% per level and grants +15% bonus XP per level.",
+      campX: 48 * 3.45,
+      campY: 48 * 1.35
+    },
+    beacon: {
+      id: "beacon",
+      name: "Smashcenter Beacon",
+      emoji: "🗼",
+      color: "#c084fc",
+      blueprintCost: 950,
+      maxLevel: 5,
+      baseOres: { stone: 35, iron: 25, gems: 16 },
+      desc: "Radiates energy across the quarry: +18 ATK, +50 Max HP, and +0.4 Speed per level.",
+      campX: 48 * 1.35,
+      campY: 48 * 2.35
+    }
+  };
+
   // Quarry Pets Catalog
   const PET_CATALOG = {
     potato_rock: {
@@ -293,6 +345,19 @@
     iron: 0,
     gems: 0,
     eggs: 0,
+    blueprints: {
+      refinery: false,
+      drill: false,
+      incubator: false,
+      beacon: false
+    },
+    addons: {
+      refinery: 0,
+      drill: 0,
+      incubator: 0,
+      beacon: 0
+    },
+    drillTimer: 0,
     ownedPets: {
       potato_rock: 0,
       chungo: 0,
@@ -329,30 +394,36 @@
   // =========================================================
   // PROGRESS SAVER (localStorage)
   // =========================================================
+  function buildSavePayload() {
+    return {
+      selectedChar: state.selectedChar,
+      pickTier: state.pickTier,
+      level: state.level,
+      xp: state.xp,
+      nextXp: state.nextXp,
+      gold: state.gold,
+      floor: state.floor,
+      hp: state.hp,
+      bonusHp: state.bonusHp,
+      bonusSpeed: state.bonusSpeed,
+      stone: state.stone,
+      iron: state.iron,
+      gems: state.gems,
+      eggs: state.eggs,
+      blueprints: state.blueprints,
+      addons: state.addons,
+      ownedPets: state.ownedPets,
+      equippedPet: state.equippedPet,
+      armorCost: state.armorCost,
+      bootsCost: state.bootsCost,
+      touchVisible: state.touchVisible,
+      updatedAt: Date.now()
+    };
+  }
+
   function saveProgress(showNotice = false) {
     try {
-      const payload = {
-        selectedChar: state.selectedChar,
-        pickTier: state.pickTier,
-        level: state.level,
-        xp: state.xp,
-        nextXp: state.nextXp,
-        gold: state.gold,
-        floor: state.floor,
-        hp: state.hp,
-        bonusHp: state.bonusHp,
-        bonusSpeed: state.bonusSpeed,
-        stone: state.stone,
-        iron: state.iron,
-        gems: state.gems,
-        eggs: state.eggs,
-        ownedPets: state.ownedPets,
-        equippedPet: state.equippedPet,
-        armorCost: state.armorCost,
-        bootsCost: state.bootsCost,
-        touchVisible: state.touchVisible
-      };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+      localStorage.setItem(SAVE_KEY, JSON.stringify(buildSavePayload()));
       if (showNotice) addLog("💾 Progress saved!");
     } catch (err) {
       // Ignore storage quota errors in restricted frames
@@ -377,6 +448,23 @@
       if (typeof data.iron === "number") state.iron = Math.max(0, data.iron);
       if (typeof data.gems === "number") state.gems = Math.max(0, data.gems);
       if (typeof data.eggs === "number") state.eggs = Math.max(0, data.eggs);
+
+      state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false };
+      if (data.blueprints && typeof data.blueprints === "object") {
+        for (const k of Object.keys(state.blueprints)) {
+          state.blueprints[k] = Boolean(data.blueprints[k]);
+        }
+      }
+
+      state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0 };
+      if (data.addons && typeof data.addons === "object") {
+        for (const k of Object.keys(state.addons)) {
+          if (typeof data.addons[k] === "number") {
+            state.addons[k] = Math.min(ADDON_CATALOG[k].maxLevel, Math.max(0, data.addons[k]));
+          }
+        }
+      }
+
       if (data.ownedPets && typeof data.ownedPets === "object") {
         for (const k of Object.keys(state.ownedPets)) {
           if (typeof data.ownedPets[k] === "number") state.ownedPets[k] = Math.max(0, data.ownedPets[k]);
@@ -418,6 +506,8 @@
     state.iron = 0;
     state.gems = 0;
     state.eggs = 0;
+    state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false };
+    state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0 };
     state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0 };
     state.equippedPet = null;
     state.armorCost = 25;
@@ -441,22 +531,26 @@
 
   function getTotalAtk() {
     const pet = getActivePet();
-    return getActiveChar().baseAtk + getActivePickaxe().atkBonus + (state.level - 1) * 2 + (pet ? pet.atkBonus : 0);
+    const beaconBonus = (state.addons.beacon || 0) * 18;
+    return getActiveChar().baseAtk + getActivePickaxe().atkBonus + (state.level - 1) * 2 + (pet ? pet.atkBonus : 0) + beaconBonus;
   }
 
   function getTotalMaxHp() {
     const pet = getActivePet();
-    return getActiveChar().baseHp + state.bonusHp + (state.level - 1) * 15 + (pet ? pet.hpBonus : 0);
+    const beaconBonus = (state.addons.beacon || 0) * 50;
+    return getActiveChar().baseHp + state.bonusHp + (state.level - 1) * 15 + (pet ? pet.hpBonus : 0) + beaconBonus;
   }
 
   function getTotalSpeed() {
     const pet = getActivePet();
-    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0);
+    const beaconBonus = (state.addons.beacon || 0) * 0.4;
+    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0) + beaconBonus;
   }
 
   function getTotalLootMult() {
     const pet = getActivePet();
-    return getActiveChar().lootMult + (pet ? pet.lootBonus : 0);
+    const refineryBonus = (state.addons.refinery || 0) * 0.25;
+    return getActiveChar().lootMult + (pet ? pet.lootBonus : 0) + refineryBonus;
   }
 
   function getSellValue() {
@@ -512,7 +606,8 @@
   }
 
   function gainXp(amount) {
-    state.xp += amount;
+    const incMult = 1 + (state.addons.incubator || 0) * 0.15;
+    state.xp += Math.round(amount * incMult);
     while (state.xp >= state.nextXp) {
       state.xp -= state.nextXp;
       state.level += 1;
@@ -521,6 +616,158 @@
       state.hp = state.maxHp;
       addLog(`LEVEL UP! ${getActiveChar().name} reached LV.${state.level}!`);
       addFloatingText(state.player.x, state.player.y - 24, "LEVEL UP!", "#38bdf8");
+    }
+  }
+
+  // =========================================================
+  // SMASHCENTER ADD-ONS (BLUEPRINTS & ORE CRAFTING)
+  // =========================================================
+  function getAddonOreCost(addonId, targetLevel) {
+    const cfg = ADDON_CATALOG[addonId];
+    const scale = Math.pow(1.75, targetLevel - 1);
+    return {
+      stone: Math.round(cfg.baseOres.stone * scale),
+      iron: Math.round(cfg.baseOres.iron * scale),
+      gems: Math.round(cfg.baseOres.gems * scale)
+    };
+  }
+
+  function formatOreCost(cost) {
+    const parts = [];
+    if (cost.stone > 0) parts.push(`🪨 ${cost.stone} STN`);
+    if (cost.iron > 0) parts.push(`🔩 ${cost.iron} IRN`);
+    if (cost.gems > 0) parts.push(`💎 ${cost.gems} GEM`);
+    return parts.join(" • ");
+  }
+
+  function buyBlueprint(addonId) {
+    const cfg = ADDON_CATALOG[addonId];
+    if (!cfg || state.blueprints[addonId] || state.gold < cfg.blueprintCost) return;
+    state.gold -= cfg.blueprintCost;
+    state.blueprints[addonId] = true;
+    game.querySelector("#hudsonSpeech").textContent = `"Sold! Take that ${cfg.name} Blueprint over to the Add-Ons tab and craft it with your ores!"`;
+    addLog(`📐 Bought ${cfg.name} Blueprint from Hudson (${cfg.blueprintCost}G)!`);
+    saveProgress();
+    updateUI();
+  }
+
+  function craftOrUpgradeAddon(addonId) {
+    const cfg = ADDON_CATALOG[addonId];
+    if (!cfg || !state.blueprints[addonId]) return;
+    const curLv = state.addons[addonId] || 0;
+    if (curLv >= cfg.maxLevel) return;
+
+    const nextLv = curLv + 1;
+    const cost = getAddonOreCost(addonId, nextLv);
+    if (state.stone < cost.stone || state.iron < cost.iron || state.gems < cost.gems) return;
+
+    state.stone -= cost.stone;
+    state.iron -= cost.iron;
+    state.gems -= cost.gems;
+    state.addons[addonId] = nextLv;
+
+    if (addonId === "beacon") {
+      state.maxHp = getTotalMaxHp();
+      state.hp = Math.min(state.maxHp, state.hp + 50);
+    }
+
+    const speech = game.querySelector("#addonWorkshopSpeech");
+    if (speech) {
+      speech.innerHTML = `🏗️ Constructed <b style="color:${cfg.color};">${cfg.name} (LV.${nextLv})</b> in your Smashcenter Base Camp!`;
+    }
+    addLog(`🏗️ Built ${cfg.name} LV.${nextLv} in Smashcenter!`);
+    addFloatingText(state.player.x, state.player.y - 28, `${cfg.name.toUpperCase()} LV.${nextLv}!`, cfg.color);
+    saveProgress();
+    updateUI();
+  }
+
+  function renderAddonsUI() {
+    const bpGrid = game.querySelector("#hudsonBlueprintsGrid");
+    const wsGrid = game.querySelector("#addonsWorkshopGrid");
+    const summaryEl = game.querySelector("#builtAddonsSummary");
+    const tabCountEl = game.querySelector("#tabAddonCount");
+
+    let totalBuiltLevels = 0;
+    const builtNames = [];
+    for (const cfg of Object.values(ADDON_CATALOG)) {
+      const lv = state.addons[cfg.id] || 0;
+      totalBuiltLevels += lv;
+      if (lv > 0) builtNames.push(`${cfg.name} (LV.${lv})`);
+    }
+    if (tabCountEl) tabCountEl.textContent = totalBuiltLevels;
+    if (summaryEl) {
+      summaryEl.textContent = builtNames.length > 0
+        ? `Active Base Structures: ${builtNames.join(" • ")}`
+        : "Active Base Structures: None yet";
+    }
+
+    // 1. Hudson's Blueprints Storefront
+    if (bpGrid) {
+      bpGrid.innerHTML = "";
+      for (const cfg of Object.values(ADDON_CATALOG)) {
+        const ownedBp = Boolean(state.blueprints[cfg.id]);
+        const lv1Cost = getAddonOreCost(cfg.id, 1);
+        const card = document.createElement("div");
+        card.className = "shop-item";
+        card.innerHTML = `
+          <div>
+            <div style="font-weight:900; font-size:15px; color:${cfg.color};"><span class="emoji-color">${cfg.emoji}</span> ${cfg.name.toUpperCase()} BLUEPRINT</div>
+            <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">${cfg.desc}</div>
+            <div style="font-size:11px; color:#fde68a; margin-top:5px;">Build Cost (LV.1): <b>${formatOreCost(lv1Cost)}</b></div>
+          </div>
+          <button class="mini-btn ${ownedBp ? "secondary" : ""}" ${ownedBp || state.gold < cfg.blueprintCost ? "disabled" : ""}>
+            ${ownedBp ? "✓ BLUEPRINT OWNED" : `BUY BLUEPRINT (${cfg.blueprintCost}G)`}
+          </button>
+        `;
+        card.querySelector("button").addEventListener("click", () => buyBlueprint(cfg.id));
+        bpGrid.appendChild(card);
+      }
+    }
+
+    // 2. Smashcenter Add-Ons Crafting Workshop
+    if (wsGrid) {
+      wsGrid.innerHTML = "";
+      for (const cfg of Object.values(ADDON_CATALOG)) {
+        const ownedBp = Boolean(state.blueprints[cfg.id]);
+        const curLv = state.addons[cfg.id] || 0;
+        const isMaxed = curLv >= cfg.maxLevel;
+        const nextCost = !isMaxed ? getAddonOreCost(cfg.id, curLv + 1) : null;
+        const canAffordOres = nextCost
+          ? state.stone >= nextCost.stone && state.iron >= nextCost.iron && state.gems >= nextCost.gems
+          : false;
+
+        const card = document.createElement("div");
+        card.className = "shop-item";
+        card.innerHTML = `
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:900; font-size:15px; color:${cfg.color};"><span class="emoji-color">${cfg.emoji}</span> ${cfg.name}</span>
+              <span style="font-size:11px; font-weight:900; color:${curLv > 0 ? "#4ade80" : "#9ca3af"};">
+                ${curLv > 0 ? `BUILT: LV.${curLv}/${cfg.maxLevel}` : "NOT BUILT"}
+              </span>
+            </div>
+            <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">${cfg.desc}</div>
+            <div style="font-size:11px; color:${ownedBp ? "#fde68a" : "#f87171"}; margin-top:6px; font-weight:800;">
+              ${!ownedBp
+                ? "🔒 Blueprint required — Buy from Hudson's Shop!"
+                : isMaxed
+                ? "★ MAX LEVEL CONSTRUCTED"
+                : `Craft LV.${curLv + 1}: ${formatOreCost(nextCost)}`}
+            </div>
+          </div>
+          <button class="mini-btn ${!ownedBp ? "secondary" : ""}" ${!ownedBp || isMaxed || !canAffordOres ? "disabled" : ""}>
+            ${!ownedBp
+              ? "LOCKED (NEED BLUEPRINT)"
+              : isMaxed
+              ? "MAX LEVEL"
+              : curLv === 0
+              ? "BUILD ADD-ON"
+              : `UPGRADE TO LV.${curLv + 1}`}
+          </button>
+        `;
+        card.querySelector("button").addEventListener("click", () => craftOrUpgradeAddon(cfg.id));
+        wsGrid.appendChild(card);
+      }
     }
   }
 
@@ -784,6 +1031,7 @@
     game.querySelector("#sideHatchBtn").disabled = state.eggs <= 0;
     game.querySelector("#unequipPetBtn").disabled = !state.equippedPet;
 
+    renderAddonsUI();
     renderPetRoster();
   }
 
@@ -793,6 +1041,66 @@
     if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return true;
     const cell = state.grid[r][c];
     return cell.type === "border" || cell.type === "rock";
+  }
+
+  function damageRockAt(r, c, dmg, customColor = null) {
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+    const cell = state.grid[r][c];
+    if (!cell || cell.type !== "rock") return;
+
+    cell.hp -= dmg;
+    const cx = c * TILE + TILE / 2;
+    const cy = r * TILE + TILE / 2;
+    spawnRockParticles(cx, cy, customColor || cell.rarity.color);
+    addFloatingText(cx, cy - 12, `-${dmg}`, customColor || cell.rarity.color);
+
+    if (cell.hp <= 0) {
+      const mult = getTotalLootMult();
+      gainXp(cell.rarity.xp + state.floor);
+
+      if (cell.hasGate) {
+        state.grid[r][c] = { type: "gate" };
+        addLog("🪜 Zone Gate uncovered! Step on it to advance.");
+        addFloatingText(cx, cy, "NEXT ZONE GATE!", "#4ade80");
+      } else {
+        state.grid[r][c] = { type: "ground", variant: (r + c) % 3 };
+        const qty = Math.ceil(cell.rarity.dropCount * mult);
+        state.drops.push({
+          x: cx - (cell.rarity.goldBonus > 0 ? 7 : 0),
+          y: cy,
+          type: cell.rarity.dropType,
+          amount: qty,
+          emoji: cell.rarity.dropEmoji
+        });
+
+        if (cell.rarity.goldBonus > 0) {
+          state.drops.push({
+            x: cx + 7,
+            y: cy,
+            type: "gold",
+            amount: Math.round(cell.rarity.goldBonus * state.floor * mult),
+            emoji: "💰"
+          });
+        }
+
+        const eggBonus = (state.addons.incubator || 0) * 0.12;
+        if (Math.random() < Math.min(1, cell.rarity.eggChance + eggBonus)) {
+          state.drops.push({
+            x: cx,
+            y: cy - 8,
+            type: "egg",
+            amount: 1,
+            emoji: "🥚"
+          });
+          addLog(`🥚 A Quarry Egg popped out of the ${cell.rarity.label} rock!`);
+        }
+
+        if (cell.rarity.xp >= 24) {
+          addLog(`★ Shattered a [${cell.rarity.label.toUpperCase()}] boulder!`);
+        }
+      }
+      saveProgress();
+    }
   }
 
   function swingPickaxe() {
@@ -829,64 +1137,7 @@
 
     const r = Math.floor(hitY / TILE);
     const c = Math.floor(hitX / TILE);
-    if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
-      const cell = state.grid[r][c];
-      if (cell.type === "rock") {
-        cell.hp -= totalAtk;
-        const cx = c * TILE + TILE / 2;
-        const cy = r * TILE + TILE / 2;
-        spawnRockParticles(cx, cy, cell.rarity.color);
-        addFloatingText(cx, cy - 12, `-${totalAtk}`, cell.rarity.color);
-
-        if (cell.hp <= 0) {
-          const mult = getTotalLootMult();
-          gainXp(cell.rarity.xp + state.floor);
-
-          if (cell.hasGate) {
-            state.grid[r][c] = { type: "gate" };
-            addLog("🪜 Zone Gate uncovered! Step on it to advance.");
-            addFloatingText(cx, cy, "NEXT ZONE GATE!", "#4ade80");
-          } else {
-            state.grid[r][c] = { type: "ground", variant: (r + c) % 3 };
-            const qty = Math.ceil(cell.rarity.dropCount * mult);
-            state.drops.push({
-              x: cx - (cell.rarity.goldBonus > 0 ? 7 : 0),
-              y: cy,
-              type: cell.rarity.dropType,
-              amount: qty,
-              emoji: cell.rarity.dropEmoji
-            });
-
-            if (cell.rarity.goldBonus > 0) {
-              state.drops.push({
-                x: cx + 7,
-                y: cy,
-                type: "gold",
-                amount: Math.round(cell.rarity.goldBonus * state.floor * mult),
-                emoji: "💰"
-              });
-            }
-
-            // Chance to drop a Quarry Egg from smashed boulders
-            if (Math.random() < cell.rarity.eggChance) {
-              state.drops.push({
-                x: cx,
-                y: cy - 8,
-                type: "egg",
-                amount: 1,
-                emoji: "🥚"
-              });
-              addLog(`🥚 A Quarry Egg popped out of the ${cell.rarity.label} rock!`);
-            }
-
-            if (cell.rarity.xp >= 24) {
-              addLog(`★ Shattered a [${cell.rarity.label.toUpperCase()}] boulder!`);
-            }
-          }
-          saveProgress();
-        }
-      }
-    }
+    damageRockAt(r, c, totalAtk);
     updateUI();
   }
 
@@ -896,6 +1147,33 @@
     const p = state.player;
     if (p.swingTimer > 0) p.swingTimer--;
     if (p.invuln > 0) p.invuln--;
+
+    // Auto-Chop Drill Add-On Seismic Pulse
+    const drillLv = state.addons.drill || 0;
+    if (drillLv > 0) {
+      state.drillTimer++;
+      if (state.drillTimer >= 150) {
+        state.drillTimer = 0;
+        let nearest = null;
+        let bestDist = 140;
+        for (let r = 1; r < ROWS - 1; r++) {
+          for (let c = 1; c < COLS - 1; c++) {
+            if (state.grid[r][c] && state.grid[r][c].type === "rock") {
+              const dist = Math.hypot(c * TILE + TILE / 2 - p.x, r * TILE + TILE / 2 - p.y);
+              if (dist < bestDist) {
+                bestDist = dist;
+                nearest = { r, c };
+              }
+            }
+          }
+        }
+        if (nearest) {
+          const drillDmg = Math.max(1, Math.round(getTotalAtk() * (0.35 + 0.15 * drillLv)));
+          damageRockAt(nearest.r, nearest.c, drillDmg, "#38bdf8");
+          updateUI();
+        }
+      }
+    }
 
     let dx = 0;
     let dy = 0;
@@ -1018,6 +1296,43 @@
     }
   }
 
+  // Draw Built Smashcenter Add-Ons in Base Camp
+  function drawCampAddons() {
+    const pulse = Math.sin(Date.now() * 0.006);
+    for (const cfg of Object.values(ADDON_CATALOG)) {
+      const lv = state.addons[cfg.id] || 0;
+      if (lv <= 0) continue;
+
+      const x = Math.round(cfg.campX);
+      const y = Math.round(cfg.campY);
+
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Base pad
+      ctx.fillStyle = "rgba(0,0,0,0.4)";
+      ctx.fillRect(-16, 8, 32, 8);
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(-14, -10, 28, 22);
+      ctx.strokeStyle = cfg.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-14, -10, 28, 22);
+
+      // Structure icon + glowing accent
+      ctx.fillStyle = "#ffffff";
+      ctx.font = EMOJI_FONT(20);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(cfg.emoji, 0, 1 + Math.round(pulse));
+
+      ctx.font = "bold 9px 'Courier New', monospace";
+      ctx.fillStyle = cfg.color;
+      ctx.fillText(`LV.${lv}`, 0, -17);
+
+      ctx.restore();
+    }
+  }
+
   // Draw Custom Pixel-Art Quarry Pet Companion
   function drawEquippedPet(pet, px, py) {
     const bob = Math.round(Math.sin(Date.now() * 0.008) * 2);
@@ -1027,12 +1342,10 @@
     ctx.save();
     ctx.translate(x, y);
 
-    // Shadow
     ctx.fillStyle = "rgba(0,0,0,0.35)";
     ctx.fillRect(-9, 8 - bob, 18, 4);
 
     if (pet.id === "potato_rock") {
-      // Potato Rock: bumpy potato-shaped rock
       ctx.fillStyle = "#78350f";
       ctx.fillRect(-9, -6, 18, 12);
       ctx.fillRect(-7, -8, 14, 16);
@@ -1040,7 +1353,6 @@
       ctx.fillRect(-7, -6, 14, 10);
       ctx.fillStyle = "#d97706";
       ctx.fillRect(-5, -5, 10, 5);
-      // Potato eyes & face
       ctx.fillStyle = "#451a03";
       ctx.fillRect(-5, -3, 2, 2);
       ctx.fillRect(4, 1, 2, 2);
@@ -1048,7 +1360,6 @@
       ctx.fillRect(-3, -1, 2, 2);
       ctx.fillRect(2, -1, 2, 2);
     } else if (pet.id === "chungo") {
-      // Chungo: Diglett-shaped piece of pink/white quartz
       ctx.fillStyle = "#9d174d";
       ctx.fillRect(-7, -10, 14, 18);
       ctx.fillRect(-5, -12, 10, 2);
@@ -1056,29 +1367,24 @@
       ctx.fillRect(-5, -10, 10, 16);
       ctx.fillStyle = "#fbcfe8";
       ctx.fillRect(-3, -9, 5, 10);
-      // Quartz base pebbles
       ctx.fillStyle = "#6b7280";
       ctx.fillRect(-9, 5, 18, 4);
-      // Diglett eyes & pink nose
       ctx.fillStyle = "#090d0a";
       ctx.fillRect(-3, -5, 2, 3);
       ctx.fillRect(2, -5, 2, 3);
       ctx.fillStyle = "#fb7185";
       ctx.fillRect(-2, -1, 5, 3);
     } else if (pet.id === "slab") {
-      // Slab: flat sturdy slab of rock
       ctx.fillStyle = "#334155";
       ctx.fillRect(-12, -4, 24, 10);
       ctx.fillStyle = "#64748b";
       ctx.fillRect(-10, -3, 20, 7);
       ctx.fillStyle = "#94a3b8";
       ctx.fillRect(-9, -3, 18, 3);
-      // Eyes
       ctx.fillStyle = "#090d0a";
       ctx.fillRect(-4, 0, 2, 2);
       ctx.fillRect(3, 0, 2, 2);
     } else if (pet.id === "grail") {
-      // Grail: hovering mini meteor with fiery tail
       ctx.fillStyle = "#f97316";
       ctx.fillRect(-12, -8, 6, 4);
       ctx.fillRect(-10, -2, 5, 4);
@@ -1091,7 +1397,6 @@
       ctx.fillRect(-4, -6, 10, 11);
       ctx.fillStyle = "#e879f9";
       ctx.fillRect(-2, -4, 5, 5);
-      // Glowing eyes
       ctx.fillStyle = "#fef08a";
       ctx.fillRect(-1, -1, 2, 2);
       ctx.fillRect(4, -1, 2, 2);
@@ -1220,7 +1525,10 @@
       ctx.fillRect(tx, ty + 29, TILE, 3);
     }
 
-    // 3. Perimeter Trees (Full Color)
+    // 3. Built Smashcenter Add-Ons in Camp
+    drawCampAddons();
+
+    // 4. Perimeter Trees (Full Color)
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -1229,7 +1537,7 @@
       ctx.fillText("🌲", tree.x, tree.y);
     }
 
-    // 4. Camp NPCs (Hudson & Prospector Phil)
+    // 5. Camp NPCs (Hudson & Prospector Phil)
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(28);
     ctx.fillText("🧑‍💼", TILE * 4.5, TILE * 1.5);
@@ -1239,7 +1547,7 @@
     ctx.fillText("HUDSON", TILE * 4.5, TILE * 1.5 - 20);
     ctx.fillText("PROSPECTOR PHIL", TILE * 5.5, TILE * 2.2 - 20);
 
-    // 5. Loot Drops (Full Color)
+    // 6. Loot Drops (Full Color)
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(22);
     for (const d of state.drops) {
@@ -1247,7 +1555,7 @@
       ctx.fillText(d.emoji, Math.round(d.x), Math.round(d.y) + bob);
     }
 
-    // 6. Wildlife (Full Color)
+    // 7. Wildlife (Full Color)
     for (const e of state.enemies) {
       ctx.fillStyle = "#ffffff";
       ctx.font = EMOJI_FONT(28);
@@ -1258,13 +1566,13 @@
       ctx.fillRect(Math.round(e.x) - 15, Math.round(e.y) - 21, Math.round(30 * (e.hp / e.maxHp)), 3);
     }
 
-    // 7. Equipped Quarry Pet Companion
+    // 8. Equipped Quarry Pet Companion
     const activePet = getActivePet();
     if (activePet) {
       drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
     }
 
-    // 8. Player (Neil 🧒🏽, Xavier, or Carter) + Material-Colored Pixel Pickaxe
+    // 9. Player + Material-Colored Pixel Pickaxe
     const p = state.player;
     const ch = getActiveChar();
     const pick = getActivePickaxe();
@@ -1293,10 +1601,8 @@
     const swingOffset = p.swingTimer > 0 ? Math.sin((p.swingTimer / 14) * Math.PI) * 1.5 - 0.75 : 0;
     ctx.rotate(baseAngle + swingOffset);
 
-    // Wooden handle
     ctx.fillStyle = "#92400e";
     ctx.fillRect(10, -2, 16, 4);
-    // Material pickaxe head
     ctx.fillStyle = pick.color;
     ctx.fillRect(22, -10, 5, 20);
     ctx.fillRect(20, -8, 4, 4);
@@ -1304,7 +1610,7 @@
 
     ctx.restore();
 
-    // 9. Square Pixel Particles & Floating Text
+    // 10. Square Pixel Particles & Floating Text
     for (const pt of state.particles) {
       ctx.fillStyle = pt.color;
       ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size);
@@ -1385,17 +1691,18 @@
   touchChopBtn.addEventListener("touchstart", triggerTouchChop, { passive: false });
   touchChopBtn.addEventListener("mousedown", triggerTouchChop);
 
-  // Prospector Phil Dialogue Topics (including Quarry Pets!)
+  // Prospector Phil Dialogue Topics
   const philTips = {
+    addons: "\"Buy Add-On Blueprints from Hudson with Gold, then switch to the Add-Ons tab to craft and upgrade them with Stone, Iron, and Gems! Each built Add-On appears right in your Smashcenter Base Camp!\"",
     pets: "\"Smashing rocks can drop Quarry Eggs! Hatch them in the Pets tab to unlock 4 companions: Potato Rock (+15% Gold & Ores), Chungo the quartz Diglett (+Speed), Slab (+6 ATK & +35 HP), and Grail the mini meteor (+15 ATK & +25% Gold)!\"",
     rarities: "\"There are 11 rock tiers out here: Common, Uncommon, Rare, Epic, Mythic, Exotic, Secret, Divine, Galactic, Glitched, and Apex Purple! Higher-tier rocks also have a much higher chance to drop Quarry Eggs!\"",
     materials: "\"Visit Hudson's Shop to upgrade your pickaxe material from Wood → Stone → Copper → Iron → Gold → Diamond → Obsidian → Mythril → Voidsteel → Celestial → Apex Purple Pickaxe!\"",
     zones: "\"Every quarry zone conceals a wooden ladder under one rock. Advance to deeper zones to boost your odds of uncovering Galactic, Glitched, and Apex Purple boulders!\"",
     crew: "\"All-Rounder Neil gets +30% Gold and ores, Xavier swings with extra power and HP to crack high-tier rocks fast, and Carter sprints across the quarry at top speed!\"",
     random: [
-      "\"Prospector Note #104: Higher-rarity rocks like Mythic, Galactic, and Apex Purple almost always drop a Quarry Egg when shattered!\"",
-      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with Potato Rock (+15% loot) or Grail (+25% loot) for massive gold payouts at Hudson's Shop!\"",
-      "\"Prospector Note #312: Your progress, hatched pets, and upgrades save automatically in your browser whenever you collect loot or upgrade gear!\""
+      "\"Prospector Note #104: Don't sell all your Stone and Iron right away—you need them to build the Ore Refinery and Auto-Chop Drill in the Add-Ons tab!\"",
+      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with the Ore Refinery (+25%/lv) and Potato Rock (+15%) for huge payouts at Hudson's Shop!\"",
+      "\"Prospector Note #312: Log into a Miner Account in the Leaderboard tab to cloud-save all your pickaxes, built add-ons, and pets across devices!\""
     ]
   };
 
@@ -1480,7 +1787,7 @@
     state.stone = 0;
     state.iron = 0;
     state.gems = 0;
-    game.querySelector("#hudsonSpeech").textContent = `"Pleasure doing business! Here's ${earned.toLocaleString()} gold. Ready to forge a stronger pickaxe material?"`;
+    game.querySelector("#hudsonSpeech").textContent = `"Pleasure doing business! Here's ${earned.toLocaleString()} gold. Need a pickaxe upgrade or an Add-On Blueprint?"`;
     addLog(`Sold ores to Hudson for +${earned.toLocaleString()}G!`);
     saveProgress();
     updateUI();
@@ -1550,7 +1857,7 @@
   });
 
   // =========================================================
-  // ONLINE ACCOUNTS & GLOBAL LEADERBOARD (FIREBASE)
+  // ONLINE ACCOUNTS, CLOUD SAVES & LEADERBOARD (FIREBASE)
   // =========================================================
   const firebaseConfig = {
     apiKey: "AIzaSyDo9o2QQsl3uKZRGjKYY-tM8u1e0yE7Ph8",
@@ -1568,6 +1875,7 @@
   const auth = window.firebase ? firebase.auth() : null;
   const db = window.firebase ? firebase.database() : null;
   const lbRef = db ? db.ref("leaderboard") : null;
+  const savesRef = db ? db.ref("saves") : null;
 
   let currentUser = null;
   let loggedInAlias = "";
@@ -1575,6 +1883,15 @@
 
   function toMinerEmail(username) {
     return `${username.toLowerCase()}@smashcenter.game`;
+  }
+
+  function applyCloudSaveData(data) {
+    if (!data || typeof data !== "object") return;
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    loadProgress();
+    applyCharacterStats(false);
+    generateFloor();
+    updateUI();
   }
 
   function renderLeaderboardTable() {
@@ -1608,16 +1925,21 @@
     }).join("");
   }
 
-  function postScoreToNetwork() {
-    if (!currentUser || !loggedInAlias || !lbRef) return;
-    lbRef.child(currentUser.uid).set({
-      username: loggedInAlias,
-      miner: getActiveChar().name,
-      zone: state.floor,
-      level: state.level,
-      gold: state.gold,
-      updatedAt: Date.now()
-    });
+  function syncAccountToCloud() {
+    if (!currentUser || !loggedInAlias) return;
+    if (lbRef) {
+      lbRef.child(currentUser.uid).set({
+        username: loggedInAlias,
+        miner: getActiveChar().name,
+        zone: state.floor,
+        level: state.level,
+        gold: state.gold,
+        updatedAt: Date.now()
+      });
+    }
+    if (savesRef) {
+      savesRef.child(currentUser.uid).set(buildSavePayload());
+    }
   }
 
   function updateAuthBanner() {
@@ -1628,12 +1950,11 @@
     if (currentUser && loggedInAlias) {
       formWrap.style.display = "none";
       loggedInWrap.style.display = "flex";
-      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Scores auto-sync to the Smashcenter Leaderboard!`;
-      postScoreToNetwork();
+      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Full progress, add-ons &amp; scores auto-save to your account!`;
     } else {
       formWrap.style.display = "flex";
       loggedInWrap.style.display = "none";
-      statusMsg.textContent = "Create a Miner Account or log in to post your Zone, Level & Gold online!";
+      statusMsg.textContent = "Create a Miner Account or log in to cloud-save your gear & post to the Leaderboard!";
     }
   }
 
@@ -1648,14 +1969,30 @@
   }
 
   if (auth) {
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       currentUser = user;
       if (user) {
         loggedInAlias = user.displayName || user.email.split("@")[0];
+        updateAuthBanner();
+
+        if (savesRef) {
+          try {
+            const snap = await savesRef.child(user.uid).once("value");
+            if (snap.exists()) {
+              applyCloudSaveData(snap.val());
+              addLog(`☁️ Loaded cloud save for ${loggedInAlias} (Zone ${state.floor}, LV.${state.level})!`);
+            } else {
+              syncAccountToCloud();
+            }
+          } catch (err) {
+            addLog(`⚠️ Cloud save sync warning: ${err.message}`);
+          }
+        }
+        syncAccountToCloud();
       } else {
         loggedInAlias = "";
+        updateAuthBanner();
       }
-      updateAuthBanner();
       renderLeaderboardTable();
     });
   }
@@ -1673,6 +2010,7 @@
       const cred = await auth.createUserWithEmailAndPassword(toMinerEmail(username), password);
       await cred.user.updateProfile({ displayName: username });
       loggedInAlias = username;
+      syncAccountToCloud();
       addLog(`🏆 Created Miner Account: ${username}!`);
       updateAuthBanner();
     } catch (err) {
@@ -1703,19 +2041,25 @@
   });
 
   game.querySelector("#syncScoreBtn").addEventListener("click", () => {
-    postScoreToNetwork();
-    addLog("📡 Posted score to Smashcenter Leaderboard!");
+    syncAccountToCloud();
+    addLog("☁️ Synced full save & score to your account!");
   });
 
-  // Auto-sync to Firebase whenever saveProgress() runs
+  game.querySelector("#resetSaveBtn").addEventListener("click", () => {
+    if (currentUser && savesRef) {
+      syncAccountToCloud();
+    }
+  });
+
+  // Auto-sync full save + leaderboard to Firebase whenever saveProgress() runs
   let lastNetSync = 0;
   const origSaveProgress = saveProgress;
   saveProgress = function (showNotice = false) {
     origSaveProgress(showNotice);
     const now = Date.now();
-    if (currentUser && loggedInAlias && now - lastNetSync > 6000) {
+    if (currentUser && loggedInAlias && (showNotice || now - lastNetSync > 6000)) {
       lastNetSync = now;
-      postScoreToNetwork();
+      syncAccountToCloud();
     }
   };
 

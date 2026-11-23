@@ -18,7 +18,7 @@
         <h1 class="hero-logo">
           <span class="hero-logo-text">ROCK CHOPPER</span>
         </h1>
-        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, hatch rock pets from quarry eggs, and get insider tips from Prospector Phil.</p>
+        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons from blueprints, and hatch rock pets from quarry eggs.</p>
 
         <div class="char-grid">
           <div class="char-card selected" data-char="neil">
@@ -65,6 +65,7 @@
         <div class="toolbar-tabs">
           <button class="tab-btn active" data-tab="quarryTab"><span class="emoji-color">⛏️</span> Quarry</button>
           <button class="tab-btn" data-tab="hudsonTab"><span class="emoji-color">🏪</span> Hudson's Shop</button>
+          <button class="tab-btn" data-tab="addonsTab"><span class="emoji-color">🏗️</span> Add-Ons (<span id="tabAddonCount">0</span>)</button>
           <button class="tab-btn" data-tab="petsTab"><span class="emoji-color">🥚</span> Pets (<span id="tabEggCount">0</span>)</button>
           <button class="tab-btn" data-tab="philTab"><span class="emoji-color">🕵️‍♂️</span> Prospector Phil</button>
           <button class="tab-btn" data-tab="leaderboardTab"><span class="emoji-color">🏆</span> Leaderboard</button>
@@ -118,7 +119,7 @@
           </div>
         </div>
 
-        <!-- TAB 2: HUDSON'S SHOP (PICKAXE MATERIALS & GEAR) -->
+        <!-- TAB 2: HUDSON'S SHOP (GEAR & ADD-ON BLUEPRINTS) -->
         <div id="hudsonTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -126,8 +127,8 @@
                 <div class="npc-portrait emoji-color">🧑‍💼</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">HUDSON — QUARRY OUTFITTER</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PICKAXE FORGE &amp; GENERAL STORE</div>
-                  <div class="npc-speech" id="hudsonSpeech">"Welcome to my pixel outpost! Bring me your ores and I'll forge your pickaxe from Wood all the way up to Apex material!"</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PICKAXE FORGE, GEAR &amp; SMASHCENTER BLUEPRINTS</div>
+                  <div class="npc-speech" id="hudsonSpeech">"Welcome to my pixel outpost! Trade ores for Gold, upgrade your pickaxe, or buy Add-On Blueprints to build structures in Smashcenter!"</div>
                 </div>
               </div>
 
@@ -175,11 +176,41 @@
                   <button class="mini-btn secondary" id="healBtn">DRINK (15G)</button>
                 </div>
               </div>
+
+              <!-- BLUEPRINT SECTION INSIDE HUDSON'S SHOP -->
+              <div style="margin-top:16px; border-top:2px solid #3f5747; padding-top:14px;">
+                <div style="font-size:15px; font-weight:900; color:#38bdf8; margin-bottom:4px;"><span class="emoji-color">📐</span> SMASHCENTER ADD-ON BLUEPRINTS</div>
+                <div style="font-size:12px; color:#9ca3af; margin-bottom:10px;">Buy a blueprint with Gold here, then head to the <b>Add-Ons</b> tab to construct and upgrade it using your harvested ores!</div>
+                <div class="shop-grid" id="hudsonBlueprintsGrid"></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB 3: QUARRY PETS & EGG HATCHERY -->
+        <!-- TAB 3: SMASHCENTER ADD-ONS WORKSHOP -->
+        <div id="addonsTab" class="tab-panel">
+          <div class="npc-screen">
+            <div class="npc-card-wrap">
+              <div class="npc-header">
+                <div class="npc-portrait emoji-color">🏗️</div>
+                <div>
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">SMASHCENTER ADD-ONS WORKSHOP</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">CRAFT &amp; UPGRADE BASE STRUCTURES WITH HARVESTED ORES</div>
+                  <div class="npc-speech" id="addonWorkshopSpeech">
+                    Buy blueprints from <b>Hudson's Shop</b>, then spend Stone, Iron, and Gems here to build permanent add-ons in your Smashcenter camp!
+                  </div>
+                  <div id="builtAddonsSummary" style="margin-top:8px; font-size:12px; color:#4ade80; font-weight:800;">
+                    Active Base Structures: None yet
+                  </div>
+                </div>
+              </div>
+
+              <div class="shop-grid" id="addonsWorkshopGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: QUARRY PETS & EGG HATCHERY -->
         <div id="petsTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -204,7 +235,7 @@
           </div>
         </div>
 
-        <!-- TAB 4: PROSPECTOR PHIL -->
+        <!-- TAB 5: PROSPECTOR PHIL -->
         <div id="philTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -212,12 +243,13 @@
                 <div class="npc-portrait emoji-color">🕵️‍♂️</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — VETERAN ROCKHOUND</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">RARITY, PET &amp; MATERIAL EXPERT</div>
-                  <div class="npc-speech" id="philSpeech">"Howdy, partner! I've been tracking all 11 rock rarities and 4 rare rock pets out here—including Potato Rock, Chungo, Slab, and Grail! Pick a topic below."</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">RARITY, ADD-ON &amp; MATERIAL EXPERT</div>
+                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Save some of your Stone, Iron, and Gems instead of selling them all—Hudson sells Blueprints to build Add-Ons right in Smashcenter!"</div>
                 </div>
               </div>
 
               <div class="tip-topics">
+                <button class="topic-btn" data-topic="addons"><span class="emoji-color">🏗️</span> Add-Ons &amp; Blueprints</button>
                 <button class="topic-btn" data-topic="pets"><span class="emoji-color">🐾</span> Quarry Pets &amp; Eggs</button>
                 <button class="topic-btn" data-topic="rarities"><span class="emoji-color">🔍</span> All 11 Rarity Tiers</button>
                 <button class="topic-btn" data-topic="materials"><span class="emoji-color">⛏️</span> Pickaxe Materials</button>
@@ -246,7 +278,7 @@
           </div>
         </div>
 
-        <!-- TAB 5: ONLINE LEADERBOARD & MINER ACCOUNTS -->
+        <!-- TAB 6: ONLINE LEADERBOARD & MINER ACCOUNTS -->
         <div id="leaderboardTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
@@ -254,8 +286,8 @@
                 <div class="npc-portrait emoji-color">🏆</div>
                 <div style="flex:1;">
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">SMASHCENTER ONLINE LEADERBOARD</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS</div>
-                  <div class="npc-speech" id="authStatusMsg">Create a Miner Account or log in to post your Zone, Level &amp; Gold online!</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS &amp; CLOUD SAVES</div>
+                  <div class="npc-speech" id="authStatusMsg">Create a Miner Account or log in to cloud-save your gear &amp; post to the Leaderboard!</div>
 
                   <!-- Account Form (Shown when logged out) -->
                   <div id="authFormWrap" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
@@ -267,7 +299,7 @@
 
                   <!-- Logged-in Controls (Hidden until signed in) -->
                   <div id="loggedInWrap" style="display:none; margin-top:10px; gap:8px; flex-wrap:wrap; align-items:center;">
-                    <button class="mini-btn" id="syncScoreBtn"><span class="emoji-color">📡</span> POST SCORE</button>
+                    <button class="mini-btn" id="syncScoreBtn"><span class="emoji-color">☁️</span> SYNC SAVE &amp; SCORE</button>
                     <button class="mini-btn secondary" id="signOutBtn" style="background:#991b1b; border-color:#f87171;">LOG OUT</button>
                   </div>
                 </div>
