@@ -18,7 +18,7 @@
         <h1 class="hero-logo">
           <span class="hero-logo-text">ROCK CHOPPER</span>
         </h1>
-        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons from blueprints, battle Quarry Bosses for rare relics, and hatch rock pets.</p>
+        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons including the Parkour Course, battle Quarry Bosses, and hatch rock pets.</p>
 
         <div class="char-grid">
           <div class="char-card selected" data-char="neil">
@@ -44,7 +44,7 @@
             <div class="char-role">Trailblazer Scout</div>
             <div class="char-stats">
               95 HP &nbsp;|&nbsp; 6 ATK &nbsp;|&nbsp; Fast Speed<br>
-              <b>Perk:</b> +35% Move Speed across the quarry grounds
+              <b>Perk:</b> +35% Move Speed across the quarry &amp; parkour course
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@
     <!-- MAIN PIXEL WORKSPACE -->
     <div class="main-layout">
       <div class="center-stage">
-        <!-- TAB 1: PIXEL SURFACE QUARRY -->
+        <!-- TAB 1: PIXEL SURFACE QUARRY & PARKOUR ARENA -->
         <div id="quarryTab" class="tab-panel active">
           <canvas id="mineCanvas"></canvas>
 
@@ -105,15 +105,16 @@
 
             <div class="touch-actions">
               <button class="chop-touch-btn" id="touchChopBtn">
-                <span class="emoji-color" style="font-size:28px;">⛏️</span>
-                <span>CHOP</span>
+                <span class="emoji-color" id="touchActionIcon" style="font-size:28px;">⛏️</span>
+                <span id="touchActionLabel">CHOP</span>
               </button>
             </div>
           </div>
 
           <div class="controls-bar">
-            <span>Move: <b>WASD / Arrows / D-Pad</b> • Chop: <b>Space / Click / CHOP</b> • Find <span class="emoji-color">🪜</span> <b>Gate</b></span>
-            <div style="display:flex; gap:6px;">
+            <span id="controlsHintText">Move: <b>WASD / Arrows / D-Pad</b> • Chop: <b>Space / Click / CHOP</b> • Find <span class="emoji-color">🪜</span> <b>Gate</b></span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="mini-btn" id="toggleParkourBtn" style="display:none; background:#15803d; border-color:#4ade80;"><span class="emoji-color">🏃</span> Enter Parkour</button>
               <button class="mini-btn secondary" id="summonBossBtn" style="background:#7f1d1d; border-color:#f87171;"><span class="emoji-color">👹</span> Summon Boss (15 STN)</button>
               <button class="mini-btn" id="newFloorBtn"><span class="emoji-color">🔄</span> New Quarry</button>
             </div>
@@ -129,7 +130,7 @@
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">HUDSON — QUARRY OUTFITTER</div>
                   <div style="font-size:11px; color:#9ca3af; font-weight:800;">PICKAXE FORGE, GEAR &amp; SMASHCENTER BLUEPRINTS</div>
-                  <div class="npc-speech" id="hudsonSpeech">"Welcome to my pixel outpost! Trade ores for Gold, upgrade your pickaxe, or buy Add-On Blueprints to build structures in Smashcenter!"</div>
+                  <div class="npc-speech" id="hudsonSpeech">"Welcome to my pixel outpost! Trade ores for Gold, upgrade your pickaxe, or buy Add-On Blueprints—including the new Parkour Course!"</div>
                 </div>
               </div>
 
@@ -164,7 +165,7 @@
                 <div class="shop-item">
                   <div>
                     <div style="font-weight:900; font-size:15px; color:#f472b6;"><span class="emoji-color">🥾</span> TRAIL RUNNER BOOTS</div>
-                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Increases movement speed to dodge Boss slam rings.</div>
+                    <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Increases movement speed across the quarry and Parkour Course.</div>
                   </div>
                   <button class="mini-btn" id="upgBoots">UPGRADE (<span id="bootsCost">30</span>G)</button>
                 </div>
@@ -219,7 +220,7 @@
                 <div class="npc-portrait emoji-color">🥚</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">QUARRY HATCHERY &amp; PET PEN</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">HATCH QUARRY EGGS OR DEFEAT BOSSES FOR MYTHIC PETS</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">HATCH QUARRY EGGS, BEAT BOSSES, OR CONQUER THE PARKOUR COURSE</div>
                   <div class="npc-speech" id="petHatchSpeech">
                     Quarry Eggs in Satchel: <b style="color:#fde68a;" id="hatchEggCount">0</b> &nbsp;|&nbsp;
                     Equipped Companion: <b style="color:#4ade80;" id="equippedPetName">None</b>
@@ -244,18 +245,18 @@
                 <div class="npc-portrait emoji-color">🕵️‍♂️</div>
                 <div>
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — VETERAN ROCKHOUND</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">BOSS, RARITY, ADD-ON &amp; MATERIAL EXPERT</div>
-                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Watch out on every 3rd Zone—giant Quarry Bosses guard the gate and drop rare permanent Relics and the Mythic Pyre Drake pet!"</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PARKOUR, BOSS, RARITY &amp; ADD-ON EXPERT</div>
+                  <div class="npc-speech" id="philSpeech">"Howdy, partner! Build the Parkour Course Add-On and beat the sky-bridge obstacle run to win a Parkour Chikorita pet and the PARKOUR MASTER badge!"</div>
                 </div>
               </div>
 
               <div class="tip-topics">
+                <button class="topic-btn" data-topic="parkour"><span class="emoji-color">🏃</span> Parkour Course &amp; Chikorita</button>
                 <button class="topic-btn" data-topic="bosses"><span class="emoji-color">👹</span> Quarry Bosses &amp; Relics</button>
                 <button class="topic-btn" data-topic="addons"><span class="emoji-color">🏗️</span> Add-Ons &amp; Blueprints</button>
                 <button class="topic-btn" data-topic="pets"><span class="emoji-color">🐾</span> Quarry Pets &amp; Eggs</button>
                 <button class="topic-btn" data-topic="rarities"><span class="emoji-color">🔍</span> All 11 Rarity Tiers</button>
                 <button class="topic-btn" data-topic="materials"><span class="emoji-color">⛏️</span> Pickaxe Materials</button>
-                <button class="topic-btn" data-topic="zones"><span class="emoji-color">🗺️</span> Advancing Zones</button>
                 <button class="topic-btn" data-topic="crew"><span class="emoji-color">🕵️</span> Neil, Xavier &amp; Carter</button>
                 <button class="topic-btn" data-topic="random"><span class="emoji-color">📁</span> Field Note Tip</button>
               </div>
@@ -288,8 +289,13 @@
                 <div class="npc-portrait emoji-color">🏆</div>
                 <div style="flex:1;">
                   <div style="font-size:20px; font-weight:900; color:#fbbf24;">SMASHCENTER ONLINE LEADERBOARD</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS &amp; CLOUD SAVES</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">GLOBAL ONLINE ACCOUNT RANKINGS, BADGES &amp; CLOUD SAVES</div>
                   <div class="npc-speech" id="authStatusMsg">Create a Miner Account or log in to cloud-save your gear &amp; post to the Leaderboard!</div>
+                  <div id="accountBadgeShowcase" style="display:none; margin-top:8px;">
+                    <span style="display:inline-block; background:#14532d; border:2px solid #facc15; color:#fef08a; font-size:11px; font-weight:900; padding:3px 10px; letter-spacing:0.6px;">
+                      <span class="emoji-color">🏅</span> PARKOUR MASTER
+                    </span>
+                  </div>
 
                   <!-- Account Form (Shown when logged out) -->
                   <div id="authFormWrap" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
@@ -313,7 +319,7 @@
                   <thead>
                     <tr style="border-bottom:2px solid #3f5747; color:#fbbf24;">
                       <th style="padding:8px;">RANK</th>
-                      <th style="padding:8px;">MINER TAG</th>
+                      <th style="padding:8px;">MINER TAG &amp; BADGES</th>
                       <th style="padding:8px;">CLASS</th>
                       <th style="padding:8px;">ZONE</th>
                       <th style="padding:8px;">LEVEL</th>

@@ -172,10 +172,22 @@
       desc: "Radiates energy across the quarry: +18 ATK, +50 Max HP, and +0.4 Speed per level.",
       campX: 48 * 1.35,
       campY: 48 * 2.35
+    },
+    parkour: {
+      id: "parkour",
+      name: "Parkour Course",
+      emoji: "🏃",
+      color: "#a3e635",
+      blueprintCost: 150,
+      maxLevel: 5,
+      baseOres: { stone: 15, iron: 8, gems: 2 },
+      desc: "Unlocks the Smashcenter Sky-Bridge Parkour Course! Beat it for the Parkour Chikorita pet & PARKOUR MASTER badge (+0.15 Speed/lv).",
+      campX: 48 * 2.4,
+      campY: 48 * 2.35
     }
   };
 
-  // Quarry Pets Catalog (Including Mythic Boss-Exclusive Pyre Drake!)
+  // Quarry Pets Catalog (Including Boss & Parkour Exclusives!)
   const PET_CATALOG = {
     potato_rock: {
       id: "potato_rock",
@@ -225,12 +237,25 @@
       speedBonus: 0.4,
       lootBonus: 0.25
     },
+    parkour_chikorita: {
+      id: "parkour_chikorita",
+      name: "Parkour Chikorita",
+      rarity: "Legendary (Parkour)",
+      color: "#a3e635",
+      specialSource: "BEAT PARKOUR COURSE",
+      desc: "Won by beating the Smashcenter Parkour Course! Adds +14 ATK, +40 Max HP, +0.85 Speed & +20% Gold.",
+      hatchWeight: 0,
+      atkBonus: 14,
+      hpBonus: 40,
+      speedBonus: 0.85,
+      lootBonus: 0.20
+    },
     pyre_drake: {
       id: "pyre_drake",
       name: "Pyre Drake",
       rarity: "Mythic (Boss Drop)",
       color: "#f43f5e",
-      bossOnly: true,
+      specialSource: "DEFEAT BOSSES",
       desc: "Rare Quarry Boss companion! Adds +22 ATK, +45 Max HP, +0.5 Speed & +20% Gold.",
       hatchWeight: 0,
       atkBonus: 22,
@@ -257,171 +282,17 @@
 
   // 11 Rock Rarity Tiers
   const RARITIES = [
-    {
-      id: "common",
-      label: "Common",
-      color: "#9ca3af",
-      rockFill: "#6b7280",
-      rockTop: "#9ca3af",
-      fleck: "#d1d5db",
-      hpMult: 1.0,
-      xp: 4,
-      dropType: "stone",
-      dropCount: 1,
-      goldBonus: 0,
-      eggChance: 0.08,
-      dropEmoji: "🪨"
-    },
-    {
-      id: "uncommon",
-      label: "Uncommon",
-      color: "#4ade80",
-      rockFill: "#4b5563",
-      rockTop: "#4ade80",
-      fleck: "#86efac",
-      hpMult: 1.5,
-      xp: 8,
-      dropType: "iron",
-      dropCount: 2,
-      goldBonus: 0,
-      eggChance: 0.14,
-      dropEmoji: "🔩"
-    },
-    {
-      id: "rare",
-      label: "Rare",
-      color: "#38bdf8",
-      rockFill: "#334155",
-      rockTop: "#38bdf8",
-      fleck: "#bae6fd",
-      hpMult: 2.2,
-      xp: 14,
-      dropType: "gem",
-      dropCount: 1,
-      goldBonus: 5,
-      eggChance: 0.22,
-      dropEmoji: "💎"
-    },
-    {
-      id: "epic",
-      label: "Epic",
-      color: "#c084fc",
-      rockFill: "#3b2854",
-      rockTop: "#c084fc",
-      fleck: "#f0abfc",
-      hpMult: 3.1,
-      xp: 24,
-      dropType: "gem",
-      dropCount: 3,
-      goldBonus: 12,
-      eggChance: 0.32,
-      dropEmoji: "💎"
-    },
-    {
-      id: "mythic",
-      label: "Mythic",
-      color: "#fbbf24",
-      rockFill: "#78350f",
-      rockTop: "#fbbf24",
-      fleck: "#fef08a",
-      hpMult: 4.4,
-      xp: 40,
-      dropType: "gem",
-      dropCount: 5,
-      goldBonus: 25,
-      eggChance: 0.45,
-      dropEmoji: "👑"
-    },
-    {
-      id: "exotic",
-      label: "Exotic",
-      color: "#f43f5e",
-      rockFill: "#4c0519",
-      rockTop: "#f43f5e",
-      fleck: "#fda4af",
-      hpMult: 6.0,
-      xp: 65,
-      dropType: "gem",
-      dropCount: 8,
-      goldBonus: 45,
-      eggChance: 0.58,
-      dropEmoji: "🌺"
-    },
-    {
-      id: "secret",
-      label: "Secret",
-      color: "#14b8a6",
-      rockFill: "#042f2e",
-      rockTop: "#2dd4bf",
-      fleck: "#99f6e4",
-      hpMult: 8.0,
-      xp: 95,
-      dropType: "gem",
-      dropCount: 12,
-      goldBonus: 75,
-      eggChance: 0.70,
-      dropEmoji: "🗝️"
-    },
-    {
-      id: "divine",
-      label: "Divine",
-      color: "#fef08a",
-      rockFill: "#422006",
-      rockTop: "#fef08a",
-      fleck: "#ffffff",
-      hpMult: 10.5,
-      xp: 140,
-      dropType: "gem",
-      dropCount: 18,
-      goldBonus: 120,
-      eggChance: 0.80,
-      dropEmoji: "👼"
-    },
-    {
-      id: "galactic",
-      label: "Galactic",
-      color: "#818cf8",
-      rockFill: "#1e1b4b",
-      rockTop: "#818cf8",
-      fleck: "#e0e7ff",
-      hpMult: 13.5,
-      xp: 200,
-      dropType: "gem",
-      dropCount: 26,
-      goldBonus: 190,
-      eggChance: 0.90,
-      dropEmoji: "🌌"
-    },
-    {
-      id: "glitched",
-      label: "Glitched",
-      color: "#22d3ee",
-      rockFill: "#0f172a",
-      rockTop: "#22d3ee",
-      fleck: "#f43f5e",
-      hpMult: 17.0,
-      xp: 290,
-      dropType: "gem",
-      dropCount: 38,
-      goldBonus: 300,
-      eggChance: 0.95,
-      dropEmoji: "👾"
-    },
-    {
-      id: "apex_purple",
-      label: "Apex Purple",
-      color: "#a855f7",
-      rockFill: "#2e1065",
-      rockTop: "#c084fc",
-      fleck: "#f5d0fe",
-      hpMult: 22.0,
-      xp: 450,
-      dropType: "gem",
-      dropCount: 55,
-      goldBonus: 500,
-      eggChance: 1.0,
-      dropEmoji: "🔮"
-    }
+    { id: "common", label: "Common", color: "#9ca3af", rockFill: "#6b7280", rockTop: "#9ca3af", fleck: "#d1d5db", hpMult: 1.0, xp: 4, dropType: "stone", dropCount: 1, goldBonus: 0, eggChance: 0.08, dropEmoji: "🪨" },
+    { id: "uncommon", label: "Uncommon", color: "#4ade80", rockFill: "#4b5563", rockTop: "#4ade80", fleck: "#86efac", hpMult: 1.5, xp: 8, dropType: "iron", dropCount: 2, goldBonus: 0, eggChance: 0.14, dropEmoji: "🔩" },
+    { id: "rare", label: "Rare", color: "#38bdf8", rockFill: "#334155", rockTop: "#38bdf8", fleck: "#bae6fd", hpMult: 2.2, xp: 14, dropType: "gem", dropCount: 1, goldBonus: 5, eggChance: 0.22, dropEmoji: "💎" },
+    { id: "epic", label: "Epic", color: "#c084fc", rockFill: "#3b2854", rockTop: "#c084fc", fleck: "#f0abfc", hpMult: 3.1, xp: 24, dropType: "gem", dropCount: 3, goldBonus: 12, eggChance: 0.32, dropEmoji: "💎" },
+    { id: "mythic", label: "Mythic", color: "#fbbf24", rockFill: "#78350f", rockTop: "#fbbf24", fleck: "#fef08a", hpMult: 4.4, xp: 40, dropType: "gem", dropCount: 5, goldBonus: 25, eggChance: 0.45, dropEmoji: "👑" },
+    { id: "exotic", label: "Exotic", color: "#f43f5e", rockFill: "#4c0519", rockTop: "#f43f5e", fleck: "#fda4af", hpMult: 6.0, xp: 65, dropType: "gem", dropCount: 8, goldBonus: 45, eggChance: 0.58, dropEmoji: "🌺" },
+    { id: "secret", label: "Secret", color: "#14b8a6", rockFill: "#042f2e", rockTop: "#2dd4bf", fleck: "#99f6e4", hpMult: 8.0, xp: 95, dropType: "gem", dropCount: 12, goldBonus: 75, eggChance: 0.70, dropEmoji: "🗝️" },
+    { id: "divine", label: "Divine", color: "#fef08a", rockFill: "#422006", rockTop: "#fef08a", fleck: "#ffffff", hpMult: 10.5, xp: 140, dropType: "gem", dropCount: 18, goldBonus: 120, eggChance: 0.80, dropEmoji: "👼" },
+    { id: "galactic", label: "Galactic", color: "#818cf8", rockFill: "#1e1b4b", rockTop: "#818cf8", fleck: "#e0e7ff", hpMult: 13.5, xp: 200, dropType: "gem", dropCount: 26, goldBonus: 190, eggChance: 0.90, dropEmoji: "🌌" },
+    { id: "glitched", label: "Glitched", color: "#22d3ee", rockFill: "#0f172a", rockTop: "#22d3ee", fleck: "#f43f5e", hpMult: 17.0, xp: 290, dropType: "gem", dropCount: 38, goldBonus: 300, eggChance: 0.95, dropEmoji: "👾" },
+    { id: "apex_purple", label: "Apex Purple", color: "#a855f7", rockFill: "#2e1065", rockTop: "#c084fc", fleck: "#f5d0fe", hpMult: 22.0, xp: 450, dropType: "gem", dropCount: 55, goldBonus: 500, eggChance: 1.0, dropEmoji: "🔮" }
   ];
 
   // World Config
@@ -447,6 +318,8 @@
     gems: 0,
     eggs: 0,
     bossKills: 0,
+    parkourMaster: false,
+    parkourClears: 0,
     bossRelics: {
       granite_heart: false,
       wyrm_scale: false,
@@ -458,13 +331,15 @@
       refinery: false,
       drill: false,
       incubator: false,
-      beacon: false
+      beacon: false,
+      parkour: false
     },
     addons: {
       refinery: 0,
       drill: 0,
       incubator: 0,
-      beacon: 0
+      beacon: 0,
+      parkour: 0
     },
     drillTimer: 0,
     ownedPets: {
@@ -472,6 +347,7 @@
       chungo: 0,
       slab: 0,
       grail: 0,
+      parkour_chikorita: 0,
       pyre_drake: 0
     },
     equippedPet: null,
@@ -489,6 +365,20 @@
     petPos: {
       x: TILE * 2.0,
       y: TILE * 2.5
+    },
+    parkour: {
+      active: false,
+      leapTimer: 0,
+      leapCooldown: 0,
+      checkpointIdx: 0,
+      checkpointX: TILE * 2.5,
+      checkpointY: TILE * 9.5,
+      savedQuarryPos: { x: TILE * 2.5, y: TILE * 2.5 },
+      platforms: [],
+      movers: [],
+      hazards: [],
+      checkpoints: [],
+      finish: { x: TILE * 25.5, y: TILE * 9.5 }
     },
     grid: [],
     trees: [],
@@ -521,6 +411,8 @@
       gems: state.gems,
       eggs: state.eggs,
       bossKills: state.bossKills,
+      parkourMaster: state.parkourMaster,
+      parkourClears: state.parkourClears,
       bossRelics: state.bossRelics,
       blueprints: state.blueprints,
       addons: state.addons,
@@ -561,6 +453,8 @@
       if (typeof data.gems === "number") state.gems = Math.max(0, data.gems);
       if (typeof data.eggs === "number") state.eggs = Math.max(0, data.eggs);
       if (typeof data.bossKills === "number") state.bossKills = Math.max(0, data.bossKills);
+      state.parkourMaster = Boolean(data.parkourMaster);
+      if (typeof data.parkourClears === "number") state.parkourClears = Math.max(0, data.parkourClears);
 
       state.bossRelics = { granite_heart: false, wyrm_scale: false, sovereign_prism: false, void_crown: false };
       if (data.bossRelics && typeof data.bossRelics === "object") {
@@ -569,14 +463,14 @@
         }
       }
 
-      state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false };
+      state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false, parkour: false };
       if (data.blueprints && typeof data.blueprints === "object") {
         for (const k of Object.keys(state.blueprints)) {
           state.blueprints[k] = Boolean(data.blueprints[k]);
         }
       }
 
-      state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0 };
+      state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0, parkour: 0 };
       if (data.addons && typeof data.addons === "object") {
         for (const k of Object.keys(state.addons)) {
           if (typeof data.addons[k] === "number") {
@@ -585,7 +479,7 @@
         }
       }
 
-      state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0, pyre_drake: 0 };
+      state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0, parkour_chikorita: 0, pyre_drake: 0 };
       if (data.ownedPets && typeof data.ownedPets === "object") {
         for (const k of Object.keys(state.ownedPets)) {
           if (typeof data.ownedPets[k] === "number") state.ownedPets[k] = Math.max(0, data.ownedPets[k]);
@@ -628,11 +522,14 @@
     state.gems = 0;
     state.eggs = 0;
     state.bossKills = 0;
+    state.parkourMaster = false;
+    state.parkourClears = 0;
+    state.parkour.active = false;
     state.bossRelics = { granite_heart: false, wyrm_scale: false, sovereign_prism: false, void_crown: false };
     state.boss = null;
-    state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false };
-    state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0 };
-    state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0, pyre_drake: 0 };
+    state.blueprints = { refinery: false, drill: false, incubator: false, beacon: false, parkour: false };
+    state.addons = { refinery: 0, drill: 0, incubator: 0, beacon: 0, parkour: 0 };
+    state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0, parkour_chikorita: 0, pyre_drake: 0 };
     state.equippedPet = null;
     state.armorCost = 25;
     state.bootsCost = 30;
@@ -670,8 +567,9 @@
   function getTotalSpeed() {
     const pet = getActivePet();
     const beaconBonus = (state.addons.beacon || 0) * 0.4;
+    const parkourBonus = (state.addons.parkour || 0) * 0.15;
     const relicBonus = state.bossRelics.wyrm_scale ? 0.35 : 0;
-    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0) + beaconBonus + relicBonus;
+    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0) + beaconBonus + parkourBonus + relicBonus;
   }
 
   function getTotalLootMult() {
@@ -692,7 +590,10 @@
     if (resetHp || state.hp > state.maxHp) {
       state.hp = state.maxHp;
     }
-    game.querySelector("#activeMinerBadge").innerHTML = `<span class="emoji-color">${ch.avatar}</span> ${ch.name}`;
+    const badgeTag = state.parkourMaster
+      ? ` <span style="color:#fde68a; border-left:1px solid #4a6352; padding-left:6px; margin-left:4px;"><span class="emoji-color">🏅</span> PARKOUR MASTER</span>`
+      : "";
+    game.querySelector("#activeMinerBadge").innerHTML = `<span class="emoji-color">${ch.avatar}</span> ${ch.name}${badgeTag}`;
     updateUI();
   }
 
@@ -714,7 +615,7 @@
   }
 
   function addFloatingText(x, y, text, color = "#fbbf24") {
-    state.floatingTexts.push({ x, y, text, color, life: 48 });
+    state.floatingTexts.push({ x, y, text, color, life: 52 });
   }
 
   function spawnRockParticles(x, y, color, count = 8) {
@@ -748,6 +649,446 @@
   }
 
   // =========================================================
+  // SMASHCENTER PARKOUR COURSE (SKY-BRIDGE OBSTACLE RUN)
+  // =========================================================
+  function buildParkourCourse() {
+    const pk = state.parkour;
+    pk.platforms = [
+      // Start deck (Cols 1-4, Rows 8-10)
+      { x: TILE * 1, y: TILE * 8, w: TILE * 4, h: TILE * 3, color: "#475569" },
+      // Stepping stones across chasm (1-tile gaps — leap with Space/CHOP!)
+      { x: TILE * 6, y: TILE * 8.5, w: TILE * 2, h: TILE * 2, color: "#64748b" },
+      { x: TILE * 9, y: TILE * 8.5, w: TILE * 2, h: TILE * 2, color: "#64748b" },
+      // Checkpoint 1 Deck
+      { x: TILE * 12, y: TILE * 8, w: TILE * 3, h: TILE * 3, color: "#334155" },
+      // Bridge to Moving Platform Zone
+      { x: TILE * 15, y: TILE * 9, w: TILE * 1.5, h: TILE * 1.5, color: "#64748b" },
+      // Checkpoint 2 Deck (Top right bend)
+      { x: TILE * 20, y: TILE * 4, w: TILE * 3, h: TILE * 3, color: "#334155" },
+      // Spike Gauntlet Bridge
+      { x: TILE * 23, y: TILE * 4.5, w: TILE * 3, h: TILE * 2, color: "#475569" },
+      // Checkpoint 3 Deck (Lower right)
+      { x: TILE * 23.5, y: TILE * 11, w: TILE * 3, h: TILE * 2.5, color: "#334155" },
+      // Final Leap Stone & Finish Trophy Island
+      { x: TILE * 21, y: TILE * 14, w: TILE * 1.8, h: TILE * 1.8, color: "#64748b" },
+      { x: TILE * 16.5, y: TILE * 13.5, w: TILE * 3.5, h: TILE * 3, color: "#14532d", isFinish: true }
+    ];
+
+    pk.movers = [
+      // Horizontal floating stone platform between Col 16.5 and Col 20
+      {
+        x: TILE * 17,
+        y: TILE * 7.5,
+        w: TILE * 2,
+        h: TILE * 2,
+        startX: TILE * 16.8,
+        endX: TILE * 18.8,
+        startY: TILE * 8.2,
+        endY: TILE * 5.0,
+        speed: 0.018,
+        phase: 0,
+        vx: 0,
+        vy: 0
+      },
+      // Vertical elevator stone between Spike Bridge and Checkpoint 3
+      {
+        x: TILE * 24.2,
+        y: TILE * 7.2,
+        w: TILE * 2,
+        h: TILE * 1.8,
+        startX: TILE * 24.2,
+        endX: TILE * 24.2,
+        startY: TILE * 6.8,
+        endY: TILE * 9.2,
+        speed: 0.022,
+        phase: 1.4,
+        vx: 0,
+        vy: 0
+      }
+    ];
+
+    pk.hazards = [
+      // Pulsing spike traps on the Spike Gauntlet Bridge
+      { x: TILE * 23.4, y: TILE * 4.6, w: TILE * 0.9, h: TILE * 1.8, offset: 0 },
+      { x: TILE * 24.8, y: TILE * 4.6, w: TILE * 0.9, h: TILE * 1.8, offset: 95 }
+    ];
+
+    pk.checkpoints = [
+      { id: 0, x: TILE * 2.5, y: TILE * 9.5, label: "START", reached: true },
+      { id: 1, x: TILE * 13.5, y: TILE * 9.5, label: "CP 1", reached: false },
+      { id: 2, x: TILE * 21.5, y: TILE * 5.5, label: "CP 2", reached: false },
+      { id: 3, x: TILE * 25.0, y: TILE * 12.2, label: "CP 3", reached: false }
+    ];
+
+    pk.finish = { x: TILE * 18.25, y: TILE * 15.0 };
+    pk.checkpointIdx = 0;
+    pk.checkpointX = TILE * 2.5;
+    pk.checkpointY = TILE * 9.5;
+    pk.leapTimer = 0;
+    pk.leapCooldown = 0;
+  }
+
+  function enterParkourCourse() {
+    if ((state.addons.parkour || 0) <= 0) {
+      addLog("🔒 Build the Parkour Course Add-On first!");
+      return;
+    }
+    state.parkour.savedQuarryPos = { x: state.player.x, y: state.player.y };
+    state.parkour.active = true;
+    buildParkourCourse();
+    state.player.x = state.parkour.checkpointX;
+    state.player.y = state.parkour.checkpointY;
+    state.petPos.x = state.player.x - 24;
+    state.petPos.y = state.player.y;
+    switchTab("quarryTab");
+    addLog("🏃 Entered the Smashcenter Parkour Course! Leap gaps with Space / CHOP!");
+    addFloatingText(state.player.x, state.player.y - 28, "PARKOUR START!", "#a3e635");
+    updateUI();
+  }
+
+  function exitParkourCourse(completed = false) {
+    state.parkour.active = false;
+    state.player.x = state.parkour.savedQuarryPos.x || TILE * 2.5;
+    state.player.y = state.parkour.savedQuarryPos.y || TILE * 2.5;
+    state.petPos.x = state.player.x - 24;
+    state.petPos.y = state.player.y;
+    updateUI();
+    if (!completed) {
+      addLog("🚪 Exited Parkour Course back to Smashcenter.");
+    }
+  }
+
+  function handleParkourCompleted() {
+    const firstClear = !state.parkourMaster;
+    state.parkourMaster = true;
+    state.parkourClears += 1;
+    state.ownedPets.parkour_chikorita = Math.max(1, state.ownedPets.parkour_chikorita || 0);
+
+    if (!state.equippedPet) {
+      state.equippedPet = "parkour_chikorita";
+      state.maxHp = getTotalMaxHp();
+      state.hp = Math.min(state.maxHp, state.hp + 40);
+    }
+
+    const parkourLv = Math.max(1, state.addons.parkour || 1);
+    const goldReward = 120 + parkourLv * 30;
+    state.gold += goldReward;
+    gainXp(100);
+
+    exitParkourCourse(true);
+    applyCharacterStats(false);
+    spawnRockParticles(state.player.x, state.player.y, "#a3e635", 26);
+
+    if (firstClear) {
+      addLog("🏅 PARKOUR MASTER BADGE UNLOCKED! Shown above your character & on the Leaderboard!");
+      addLog("🌿 NEW PET UNLOCKED: Parkour Chikorita (+14 ATK, +40 HP, +0.85 Speed, +20% Gold)!");
+      addFloatingText(state.player.x, state.player.y - 44, "🏅 PARKOUR MASTER!", "#fde68a");
+      addFloatingText(state.player.x, state.player.y - 24, "🌿 GOT PARKOUR CHIKORITA!", "#a3e635");
+    } else {
+      addLog(`🏆 Cleared Parkour Course again! (+${goldReward}G & +100 XP)`);
+      addFloatingText(state.player.x, state.player.y - 28, `COURSE CLEAR! +${goldReward}G`, "#a3e635");
+    }
+
+    saveProgress(true);
+    syncAccountToCloud();
+    updateUI();
+  }
+
+  function parkourLeap() {
+    const pk = state.parkour;
+    if (pk.leapTimer > 0 || pk.leapCooldown > 0) return;
+    pk.leapTimer = 14;
+    pk.leapCooldown = 22;
+    spawnRockParticles(state.player.x, state.player.y + 10, "#a3e635", 6);
+  }
+
+  function updateParkour() {
+    const pk = state.parkour;
+    const p = state.player;
+    if (pk.leapTimer > 0) pk.leapTimer--;
+    if (pk.leapCooldown > 0) pk.leapCooldown--;
+
+    // Update moving platforms
+    const t = Date.now();
+    for (const m of pk.movers) {
+      const prevX = m.x;
+      const prevY = m.y;
+      const wave = (Math.sin(t * m.speed * 0.06 + m.phase) + 1) * 0.5;
+      m.x = m.startX + (m.endX - m.startX) * wave;
+      m.y = m.startY + (m.endY - m.startY) * wave;
+      m.vx = m.x - prevX;
+      m.vy = m.y - prevY;
+    }
+
+    // Move player freely across the sky arena
+    let dx = 0;
+    let dy = 0;
+    if (state.keys["w"] || state.keys["ArrowUp"] || state.touchDirs.up) dy -= 1;
+    if (state.keys["s"] || state.keys["ArrowDown"] || state.touchDirs.down) dy += 1;
+    if (state.keys["a"] || state.keys["ArrowLeft"] || state.touchDirs.left) dx -= 1;
+    if (state.keys["d"] || state.keys["ArrowRight"] || state.touchDirs.right) dx += 1;
+
+    const baseSpd = getTotalSpeed();
+    const spd = pk.leapTimer > 0 ? baseSpd + 3.9 : baseSpd;
+
+    if (dx !== 0 || dy !== 0) {
+      const len = Math.hypot(dx, dy);
+      dx /= len;
+      dy /= len;
+      p.dirX = dx;
+      p.dirY = dy;
+      p.x = Math.max(TILE, Math.min((COLS - 1) * TILE, p.x + dx * spd));
+      p.y = Math.max(TILE, Math.min((ROWS - 1) * TILE, p.y + dy * spd));
+    } else if (pk.leapTimer > 0) {
+      // Forward hop boost even if tapped while stationary
+      p.x = Math.max(TILE, Math.min((COLS - 1) * TILE, p.x + p.dirX * spd));
+      p.y = Math.max(TILE, Math.min((ROWS - 1) * TILE, p.y + p.dirY * spd));
+    }
+
+    // Smooth pet follow
+    state.petPos.x += (p.x - p.dirX * 26 - state.petPos.x) * 0.14;
+    state.petPos.y += (p.y - p.dirY * 26 + 6 - state.petPos.y) * 0.14;
+
+    // Check if standing on solid platform or moving platform
+    let onSolid = false;
+    for (const plat of pk.platforms) {
+      if (p.x >= plat.x - 6 && p.x <= plat.x + plat.w + 6 && p.y >= plat.y - 6 && p.y <= plat.y + plat.h + 6) {
+        onSolid = true;
+        break;
+      }
+    }
+    if (!onSolid) {
+      for (const m of pk.movers) {
+        if (p.x >= m.x - 8 && p.x <= m.x + m.w + 8 && p.y >= m.y - 8 && p.y <= m.y + m.h + 8) {
+          onSolid = true;
+          if (pk.leapTimer === 0) {
+            p.x += m.vx;
+            p.y += m.vy;
+          }
+          break;
+        }
+      }
+    }
+
+    // Checkpoints
+    for (const cp of pk.checkpoints) {
+      if (!cp.reached && Math.hypot(p.x - cp.x, p.y - cp.y) < 34) {
+        cp.reached = true;
+        pk.checkpointIdx = cp.id;
+        pk.checkpointX = cp.x;
+        pk.checkpointY = cp.y;
+        spawnRockParticles(cp.x, cp.y, "#4ade80", 12);
+        addFloatingText(cp.x, cp.y - 22, `CHECKPOINT ${cp.id} SAVED!`, "#4ade80");
+        addLog(`🚩 Reached Parkour Checkpoint ${cp.id}/3!`);
+      }
+    }
+
+    // Hazard spike check (only dangerous when active & not airborne)
+    const cycleTick = Math.floor(Date.now() / 16);
+    if (pk.leapTimer === 0) {
+      for (const hz of pk.hazards) {
+        const phase = (cycleTick + hz.offset) % 180;
+        const activeSpikes = phase >= 120;
+        if (activeSpikes && p.x >= hz.x && p.x <= hz.x + hz.w && p.y >= hz.y && p.y <= hz.y + hz.h) {
+          spawnRockParticles(p.x, p.y, "#ef4444", 14);
+          addFloatingText(p.x, p.y - 22, "SPIKED! BACK TO CHECKPOINT", "#f87171");
+          p.x = pk.checkpointX;
+          p.y = pk.checkpointY;
+          return;
+        }
+      }
+    }
+
+    // Chasm fall check (safe while mid-leap!)
+    if (!onSolid && pk.leapTimer === 0) {
+      spawnRockParticles(p.x, p.y, "#38bdf8", 14);
+      addFloatingText(p.x, p.y - 20, "FELL! BACK TO CHECKPOINT", "#f87171");
+      p.x = pk.checkpointX;
+      p.y = pk.checkpointY;
+      return;
+    }
+
+    // Finish Trophy check
+    if (Math.hypot(p.x - pk.finish.x, p.y - pk.finish.y) < 38) {
+      handleParkourCompleted();
+      return;
+    }
+
+    // Update particles & floating texts
+    for (let i = state.particles.length - 1; i >= 0; i--) {
+      const pt = state.particles[i];
+      pt.x += pt.vx;
+      pt.y += pt.vy;
+      pt.life--;
+      if (pt.life <= 0) state.particles.splice(i, 1);
+    }
+    for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+      state.floatingTexts[i].y -= 0.75;
+      state.floatingTexts[i].life--;
+      if (state.floatingTexts[i].life <= 0) state.floatingTexts.splice(i, 1);
+    }
+  }
+
+  function renderParkour() {
+    const pk = state.parkour;
+    const worldW = COLS * TILE;
+    const worldH = ROWS * TILE;
+
+    const camX = Math.round(Math.max(0, Math.min(worldW - canvas.width, state.player.x - canvas.width / 2)));
+    const camY = Math.round(Math.max(0, Math.min(worldH - canvas.height, state.player.y - canvas.height / 2)));
+
+    // Deep Sky-Quarry Chasm Background
+    ctx.fillStyle = "#090d16";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(-camX, -camY);
+
+    // Chasm Grid & Floating Dust Motes
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
+    ctx.lineWidth = 1;
+    for (let c = 0; c <= COLS; c++) {
+      ctx.beginPath();
+      ctx.moveTo(c * TILE, 0);
+      ctx.lineTo(c * TILE, worldH);
+      ctx.stroke();
+    }
+    for (let r = 0; r <= ROWS; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, r * TILE);
+      ctx.lineTo(worldW, r * TILE);
+      ctx.stroke();
+    }
+
+    // Static Platforms
+    for (const plat of pk.platforms) {
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(plat.x + 4, plat.y + 8, plat.w, plat.h);
+      ctx.fillStyle = plat.color;
+      ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+      ctx.strokeStyle = plat.isFinish ? "#facc15" : "#94a3b8";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(plat.x, plat.y, plat.w, plat.h);
+    }
+
+    // Moving Platforms
+    for (const m of pk.movers) {
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(Math.round(m.x) + 4, Math.round(m.y) + 8, m.w, m.h);
+      ctx.fillStyle = "#0284c7";
+      ctx.fillRect(Math.round(m.x), Math.round(m.y), m.w, m.h);
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(Math.round(m.x), Math.round(m.y), m.w, m.h);
+    }
+
+    // Pulsing Spike Grates
+    const cycleTick = Math.floor(Date.now() / 16);
+    for (const hz of pk.hazards) {
+      const phase = (cycleTick + hz.offset) % 180;
+      const isWarning = phase >= 85 && phase < 120;
+      const isActive = phase >= 120;
+      ctx.fillStyle = isActive ? "#dc2626" : isWarning ? "#d97706" : "#1e293b";
+      ctx.fillRect(hz.x, hz.y, hz.w, hz.h);
+      ctx.strokeStyle = isActive ? "#fca5a5" : isWarning ? "#fde047" : "#475569";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(hz.x, hz.y, hz.w, hz.h);
+      if (isActive) {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = EMOJI_FONT(20);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🔥", hz.x + hz.w / 2, hz.y + hz.h / 2);
+      }
+    }
+
+    // Checkpoints
+    for (const cp of pk.checkpoints) {
+      ctx.fillStyle = "#ffffff";
+      ctx.font = EMOJI_FONT(24);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(cp.reached ? "🚩" : "🏳️", cp.x, cp.y);
+      ctx.font = "bold 10px 'Courier New', monospace";
+      ctx.fillStyle = cp.reached ? "#4ade80" : "#cbd5e1";
+      ctx.fillText(cp.label, cp.x, cp.y - 20);
+    }
+
+    // Finish Pedestal Trophy
+    const bob = Math.round(Math.sin(Date.now() * 0.007) * 4);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = EMOJI_FONT(34);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🏆", pk.finish.x, pk.finish.y + bob);
+    ctx.font = "bold 11px 'Courier New', monospace";
+    ctx.fillStyle = "#fde047";
+    ctx.fillText("FINISH", pk.finish.x, pk.finish.y - 26);
+
+    // Equipped Pet
+    const activePet = getActivePet();
+    if (activePet) {
+      drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
+    }
+
+    // Player (with jump elevation offset during Leap!)
+    const p = state.player;
+    const ch = getActiveChar();
+    const leapLift = pk.leapTimer > 0 ? Math.sin((pk.leapTimer / 14) * Math.PI) * 18 : 0;
+
+    ctx.save();
+    ctx.translate(Math.round(p.x), Math.round(p.y));
+
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(-12, 11, 24, 6);
+
+    ctx.translate(0, -Math.round(leapLift));
+    ctx.fillStyle = "#ffffff";
+    ctx.font = EMOJI_FONT(30);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(ch.avatar, 0, 0);
+
+    drawCharacterHeader(ch.name.toUpperCase());
+    ctx.restore();
+
+    // Particles & Floating Text
+    for (const pt of state.particles) {
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size);
+    }
+    ctx.font = "bold 13px 'Courier New', monospace";
+    ctx.textAlign = "center";
+    for (const ft of state.floatingTexts) {
+      ctx.fillStyle = "#000000";
+      ctx.fillText(ft.text, Math.round(ft.x) + 1, Math.round(ft.y) + 1);
+      ctx.fillStyle = ft.color;
+      ctx.fillText(ft.text, Math.round(ft.x), Math.round(ft.y));
+    }
+
+    ctx.restore();
+
+    // Top Screen Parkour Course HUD
+    const barW = Math.min(460, canvas.width - 24);
+    const barX = Math.round((canvas.width - barW) / 2);
+    ctx.fillStyle = "rgba(9, 13, 10, 0.9)";
+    ctx.fillRect(barX, 10, barW, 34);
+    ctx.strokeStyle = "#a3e635";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(barX, 10, barW, 34);
+
+    ctx.font = "bold 11px 'Courier New', monospace";
+    ctx.fillStyle = "#a3e635";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`🏃 PARKOUR COURSE | CP ${pk.checkpointIdx}/3`, barX + 10, 27);
+
+    ctx.fillStyle = pk.leapCooldown === 0 ? "#fde047" : "#9ca3af";
+    ctx.textAlign = "right";
+    ctx.fillText(pk.leapCooldown === 0 ? "[SPACE/CHOP: LEAP READY]" : "RECHARGING...", barX + barW - 10, 27);
+  }
+
+  // =========================================================
   // QUARRY BOSS SPAWNING & RARE BOSS DROPS
   // =========================================================
   function spawnQuarryBoss(customX = null, customY = null) {
@@ -758,7 +1099,6 @@
     const bx = customX !== null ? customX : TILE * (COLS - 5);
     const by = customY !== null ? customY : TILE * (ROWS - 5);
 
-    // Clear a small arena around the boss so it doesn't get stuck inside boulders
     const br = Math.floor(by / TILE);
     const bc = Math.floor(bx / TILE);
     for (let r = br - 1; r <= br + 1; r++) {
@@ -797,14 +1137,12 @@
     addFloatingText(boss.x, boss.y - 24, "BOSS DEFEATED!", "#fbbf24");
     gainXp(boss.xp);
 
-    // Guaranteed Gold, Gems & Quarry Eggs
     const goldDrop = Math.round(boss.gold * (1 + (state.floor - 1) * 0.2) * mult);
     const gemDrop = Math.ceil(boss.gems * mult);
     state.drops.push({ x: boss.x - 14, y: boss.y, type: "gold", amount: goldDrop, emoji: "💰" });
     state.drops.push({ x: boss.x + 14, y: boss.y, type: "gem", amount: gemDrop, emoji: "💎" });
     state.drops.push({ x: boss.x, y: boss.y - 12, type: "egg", amount: 1, emoji: "🥚" });
 
-    // Rare Drop 1: Signature Permanent Boss Relic (75% chance if not owned yet)
     const relic = BOSS_RELICS[boss.relicId];
     if (relic && !state.bossRelics[relic.id] && Math.random() < 0.75) {
       state.bossRelics[relic.id] = true;
@@ -814,7 +1152,6 @@
       addFloatingText(boss.x, boss.y - 42, `RELIC: ${relic.name.toUpperCase()}!`, relic.color);
     }
 
-    // Rare Drop 2: Mythic Boss-Exclusive Pet (Pyre Drake - 30% chance)
     if (Math.random() < 0.30) {
       state.ownedPets.pyre_drake = (state.ownedPets.pyre_drake || 0) + 1;
       if (!state.equippedPet) {
@@ -966,6 +1303,7 @@
           ? state.stone >= nextCost.stone && state.iron >= nextCost.iron && state.gems >= nextCost.gems
           : false;
 
+        const isParkourBuilt = cfg.id === "parkour" && curLv > 0;
         const card = document.createElement("div");
         card.className = "shop-item";
         card.innerHTML = `
@@ -985,17 +1323,24 @@
                 : `Craft LV.${curLv + 1}: ${formatOreCost(nextCost)}`}
             </div>
           </div>
-          <button class="mini-btn ${!ownedBp ? "secondary" : ""}" ${!ownedBp || isMaxed || !canAffordOres ? "disabled" : ""}>
-            ${!ownedBp
-              ? "LOCKED (NEED BLUEPRINT)"
-              : isMaxed
-              ? "MAX LEVEL"
-              : curLv === 0
-              ? "BUILD ADD-ON"
-              : `UPGRADE TO LV.${curLv + 1}`}
-          </button>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="mini-btn craft-addon-btn ${!ownedBp ? "secondary" : ""}" style="flex:1;" ${!ownedBp || isMaxed || !canAffordOres ? "disabled" : ""}>
+              ${!ownedBp
+                ? "LOCKED (NEED BLUEPRINT)"
+                : isMaxed
+                ? "MAX LEVEL"
+                : curLv === 0
+                ? "BUILD ADD-ON"
+                : `UPGRADE TO LV.${curLv + 1}`}
+            </button>
+            ${isParkourBuilt ? `<button class="mini-btn enter-pk-btn" style="background:#15803d; border-color:#4ade80;">🏃 ENTER COURSE</button>` : ""}
+          </div>
         `;
-        card.querySelector("button").addEventListener("click", () => craftOrUpgradeAddon(cfg.id));
+        card.querySelector(".craft-addon-btn").addEventListener("click", () => craftOrUpgradeAddon(cfg.id));
+        const enterBtn = card.querySelector(".enter-pk-btn");
+        if (enterBtn) {
+          enterBtn.addEventListener("click", enterParkourCourse);
+        }
         wsGrid.appendChild(card);
       }
     }
@@ -1008,7 +1353,7 @@
     if (state.eggs <= 0) return;
     state.eggs -= 1;
 
-    const list = Object.values(PET_CATALOG).filter((p) => !p.bossOnly);
+    const list = Object.values(PET_CATALOG).filter((p) => !p.specialSource);
     const totalWeight = list.reduce((sum, p) => sum + p.hatchWeight, 0);
     let roll = Math.random() * totalWeight;
     let hatched = list[0];
@@ -1068,7 +1413,7 @@
           <div style="font-size:12px; color:#cbd5e1; margin-top:6px;">${pet.desc}</div>
         </div>
         <button class="mini-btn ${isEquipped ? "secondary" : ""}" ${count === 0 ? "disabled" : ""}>
-          ${count === 0 ? (pet.bossOnly ? "LOCKED (DEFEAT BOSSES)" : "LOCKED (HATCH EGGS)") : isEquipped ? "★ EQUIPPED" : "EQUIP COMPANION"}
+          ${count === 0 ? `LOCKED (${pet.specialSource || "HATCH EGGS"})` : isEquipped ? "★ EQUIPPED" : "EQUIP COMPANION"}
         </button>
       `;
 
@@ -1186,7 +1531,6 @@
       state.grid.push(row);
     }
 
-    // Automatically spawn a Quarry Boss every 3rd Zone!
     if (state.floor % 3 === 0) {
       spawnQuarryBoss(gateC * TILE + TILE / 2, gateR * TILE + TILE / 2);
     }
@@ -1217,15 +1561,55 @@
     game.querySelector("#btnEggCount").textContent = state.eggs;
     game.querySelector("#sideEggCount").textContent = state.eggs;
 
+    // Parkour UI controls toggle
+    const pkBuilt = (state.addons.parkour || 0) > 0;
+    const pkBtn = game.querySelector("#toggleParkourBtn");
     const summonBtn = game.querySelector("#summonBossBtn");
-    if (summonBtn) {
-      if (state.boss) {
-        summonBtn.innerHTML = `<span class="emoji-color">👹</span> Boss Active!`;
-        summonBtn.disabled = true;
+    const newFloorBtn = game.querySelector("#newFloorBtn");
+    const hintText = game.querySelector("#controlsHintText");
+    const touchIcon = game.querySelector("#touchActionIcon");
+    const touchLabel = game.querySelector("#touchActionLabel");
+
+    if (pkBtn) {
+      pkBtn.style.display = pkBuilt ? "inline-block" : "none";
+      if (state.parkour.active) {
+        pkBtn.innerHTML = `<span class="emoji-color">🚪</span> Exit Parkour`;
+        pkBtn.style.background = "#991b1b";
+        pkBtn.style.borderColor = "#f87171";
       } else {
-        summonBtn.innerHTML = `<span class="emoji-color">👹</span> Summon Boss (15 STN)`;
-        summonBtn.disabled = state.stone < 15;
+        pkBtn.innerHTML = `<span class="emoji-color">🏃</span> Enter Parkour`;
+        pkBtn.style.background = "#15803d";
+        pkBtn.style.borderColor = "#4ade80";
       }
+    }
+
+    if (state.parkour.active) {
+      if (summonBtn) summonBtn.style.display = "none";
+      if (newFloorBtn) newFloorBtn.style.display = "none";
+      if (hintText) hintText.innerHTML = `Parkour: <b>WASD / Arrows / D-Pad</b> • Leap Gaps: <b>Space / Click / LEAP</b> • Reach <span class="emoji-color">🏆</span>`;
+      if (touchIcon) touchIcon.textContent = "🏃";
+      if (touchLabel) touchLabel.textContent = "LEAP";
+    } else {
+      if (summonBtn) {
+        summonBtn.style.display = "inline-block";
+        if (state.boss) {
+          summonBtn.innerHTML = `<span class="emoji-color">👹</span> Boss Active!`;
+          summonBtn.disabled = true;
+        } else {
+          summonBtn.innerHTML = `<span class="emoji-color">👹</span> Summon Boss (15 STN)`;
+          summonBtn.disabled = state.stone < 15;
+        }
+      }
+      if (newFloorBtn) newFloorBtn.style.display = "inline-block";
+      if (hintText) hintText.innerHTML = `Move: <b>WASD / Arrows / D-Pad</b> • Chop: <b>Space / Click / CHOP</b> • Find <span class="emoji-color">🪜</span> <b>Gate</b>`;
+      if (touchIcon) touchIcon.textContent = "⛏️";
+      if (touchLabel) touchLabel.textContent = "CHOP";
+    }
+
+    // Account PARKOUR MASTER badge showcase
+    const showcase = game.querySelector("#accountBadgeShowcase");
+    if (showcase) {
+      showcase.style.display = currentUser && state.parkourMaster ? "block" : "none";
     }
 
     const sidePet = game.querySelector("#sidePetLabel");
@@ -1351,6 +1735,15 @@
     }
   }
 
+  function performPrimaryAction() {
+    if (!state.started) return;
+    if (state.parkour.active) {
+      parkourLeap();
+      return;
+    }
+    swingPickaxe();
+  }
+
   function swingPickaxe() {
     if (!state.started || state.player.swingTimer > 0) return;
     state.player.swingTimer = 14;
@@ -1360,7 +1753,6 @@
     const hitX = state.player.x + state.player.dirX * reach;
     const hitY = state.player.y + state.player.dirY * reach;
 
-    // Hit Quarry Boss if in reach
     if (state.boss && Math.hypot(state.boss.x - hitX, state.boss.y - hitY) < 58) {
       const b = state.boss;
       b.hp -= totalAtk;
@@ -1372,7 +1764,6 @@
       }
     }
 
-    // Hit Wildlife
     for (let i = state.enemies.length - 1; i >= 0; i--) {
       const e = state.enemies[i];
       if (Math.hypot(e.x - hitX, e.y - hitY) < 44) {
@@ -1404,12 +1795,15 @@
 
   function update() {
     if (!state.started) return;
+    if (state.parkour.active) {
+      updateParkour();
+      return;
+    }
 
     const p = state.player;
     if (p.swingTimer > 0) p.swingTimer--;
     if (p.invuln > 0) p.invuln--;
 
-    // Auto-Chop Drill Add-On Seismic Pulse
     const drillLv = state.addons.drill || 0;
     if (drillLv > 0) {
       state.drillTimer++;
@@ -1470,7 +1864,6 @@
       }
     }
 
-    // Smooth pet companion follow
     const targetPetX = p.x - p.dirX * 28;
     const targetPetY = p.y - p.dirY * 28 + 6;
     state.petPos.x += (targetPetX - state.petPos.x) * 0.12;
@@ -1479,7 +1872,9 @@
     const lookR = Math.floor((p.y + p.dirY * 42) / TILE);
     const lookC = Math.floor((p.x + p.dirX * 42) / TILE);
     const targetInfo = game.querySelector("#targetRockInfo");
-    if (state.boss && Math.hypot(state.boss.x - p.x, state.boss.y - p.y) < 120) {
+    if ((state.addons.parkour || 0) > 0 && Math.hypot(ADDON_CATALOG.parkour.campX - p.x, ADDON_CATALOG.parkour.campY - p.y) < 38) {
+      targetInfo.innerHTML = `<span style="color:#a3e635; font-weight:900;">[PARKOUR COURSE — Click Enter Parkour]</span>`;
+    } else if (state.boss && Math.hypot(state.boss.x - p.x, state.boss.y - p.y) < 120) {
       targetInfo.innerHTML = `<span style="color:${state.boss.color}; font-weight:900;">[BOSS: ${state.boss.hp}/${state.boss.maxHp} HP]</span>`;
     } else if (state.grid[lookR] && state.grid[lookR][lookC] && state.grid[lookR][lookC].type === "rock") {
       const rk = state.grid[lookR][lookC];
@@ -1488,7 +1883,6 @@
       targetInfo.textContent = "Walk near a rock";
     }
 
-    // Zone Gate check (locked while a Boss is alive)
     const pr = Math.floor(p.y / TILE);
     const pc = Math.floor(p.x / TILE);
     if (state.grid[pr] && state.grid[pr][pc] && state.grid[pr][pc].type === "gate") {
@@ -1527,7 +1921,6 @@
       }
     }
 
-    // Quarry Boss AI & Telegraphed Seismic Slam
     if (state.boss) {
       const b = state.boss;
       if (b.hitFlash > 0) b.hitFlash--;
@@ -1624,6 +2017,30 @@
     }
   }
 
+  // Draw Character Name + PARKOUR MASTER Badge above character
+  function drawCharacterHeader(charName) {
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "bold 11px 'Courier New', monospace";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(charName, 0, -22);
+
+    if (state.parkourMaster) {
+      const bw = 116;
+      const bh = 15;
+      const by = -42;
+      ctx.fillStyle = "rgba(20, 83, 45, 0.94)";
+      ctx.fillRect(-bw / 2, by, bw, bh);
+      ctx.strokeStyle = "#facc15";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-bw / 2, by, bw, bh);
+
+      ctx.font = "bold 9px 'Courier New', monospace";
+      ctx.fillStyle = "#fef08a";
+      ctx.fillText("🏅 PARKOUR MASTER", 0, by + bh / 2 + 0.5);
+    }
+  }
+
   // Draw Built Smashcenter Add-Ons in Base Camp
   function drawCampAddons() {
     const pulse = Math.sin(Date.now() * 0.006);
@@ -1653,13 +2070,13 @@
 
       ctx.font = "bold 9px 'Courier New', monospace";
       ctx.fillStyle = cfg.color;
-      ctx.fillText(`LV.${lv}`, 0, -17);
+      ctx.fillText(cfg.id === "parkour" ? "PARKOUR" : `LV.${lv}`, 0, -17);
 
       ctx.restore();
     }
   }
 
-  // Draw Custom Pixel-Art Quarry Pet Companion
+  // Draw Custom Pixel-Art Quarry Pet Companion (Including Parkour Chikorita!)
   function drawEquippedPet(pet, px, py) {
     const bob = Math.round(Math.sin(Date.now() * 0.008) * 2);
     const x = Math.round(px);
@@ -1726,8 +2143,41 @@
       ctx.fillStyle = "#fef08a";
       ctx.fillRect(-1, -1, 2, 2);
       ctx.fillRect(4, -1, 2, 2);
+    } else if (pet.id === "parkour_chikorita") {
+      // Parkour Chikorita Pixel Art (Authentic Chikorita palette + Red/Gold Parkour Headband)
+      // Head leaf crest
+      ctx.fillStyle = "#388028";
+      ctx.fillRect(-2, -16, 10, 4);
+      ctx.fillStyle = "#60A848";
+      ctx.fillRect(0, -15, 8, 3);
+      // Pear-shaped pale lime body
+      ctx.fillStyle = "#98C008";
+      ctx.fillRect(-7, -8, 14, 15);
+      ctx.fillStyle = "#C8E860";
+      ctx.fillRect(-6, -7, 12, 13);
+      ctx.fillStyle = "#D8F880";
+      ctx.fillRect(-4, -6, 6, 6);
+      // Sporty Red & Gold Parkour Headband
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(-7, -6, 14, 3);
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(-1, -6, 3, 3);
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(-10, -5, 3, 2); // fluttering headband tail
+      // Cute red Chikorita eyes
+      ctx.fillStyle = "#900000";
+      ctx.fillRect(-3, -2, 2, 3);
+      ctx.fillRect(2, -2, 2, 3);
+      // Dark green neck leaf buds
+      ctx.fillStyle = "#388028";
+      ctx.fillRect(-5, 2, 3, 2);
+      ctx.fillRect(-1, 2, 3, 2);
+      ctx.fillRect(3, 2, 3, 2);
+      // Little feet
+      ctx.fillStyle = "#98C008";
+      ctx.fillRect(-5, 7, 3, 2);
+      ctx.fillRect(2, 7, 3, 2);
     } else if (pet.id === "pyre_drake") {
-      // Mythic Boss Pet: Pyre Drake
       ctx.fillStyle = "#991b1b";
       ctx.fillRect(-12, -4, 6, 6);
       ctx.fillRect(6, -4, 6, 6);
@@ -1745,7 +2195,7 @@
     ctx.font = "bold 9px 'Courier New', monospace";
     ctx.fillStyle = pet.color;
     ctx.textAlign = "center";
-    ctx.fillText(pet.name.toUpperCase(), 0, -16);
+    ctx.fillText(pet.name.toUpperCase(), 0, -20);
 
     ctx.restore();
   }
@@ -1753,6 +2203,10 @@
   // Render Pixel-Art Surface Quarry
   function render() {
     if (!state.started) return;
+    if (state.parkour.active) {
+      renderParkour();
+      return;
+    }
 
     const worldW = COLS * TILE;
     const worldH = ROWS * TILE;
@@ -1869,7 +2323,7 @@
     // 3. Built Smashcenter Add-Ons in Camp
     drawCampAddons();
 
-    // 4. Perimeter Trees (Full Color)
+    // 4. Perimeter Trees
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -1878,7 +2332,7 @@
       ctx.fillText("🌲", tree.x, tree.y);
     }
 
-    // 5. Camp NPCs (Hudson & Prospector Phil)
+    // 5. Camp NPCs
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(28);
     ctx.fillText("🧑‍💼", TILE * 4.5, TILE * 1.5);
@@ -1888,7 +2342,7 @@
     ctx.fillText("HUDSON", TILE * 4.5, TILE * 1.5 - 20);
     ctx.fillText("PROSPECTOR PHIL", TILE * 5.5, TILE * 2.2 - 20);
 
-    // 6. Loot Drops (Full Color)
+    // 6. Loot Drops
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(22);
     for (const d of state.drops) {
@@ -1896,7 +2350,7 @@
       ctx.fillText(d.emoji, Math.round(d.x), Math.round(d.y) + bob);
     }
 
-    // 7. Wildlife (Full Color)
+    // 7. Wildlife
     for (const e of state.enemies) {
       ctx.fillStyle = "#ffffff";
       ctx.font = EMOJI_FONT(28);
@@ -1907,13 +2361,12 @@
       ctx.fillRect(Math.round(e.x) - 15, Math.round(e.y) - 21, Math.round(30 * (e.hp / e.maxHp)), 3);
     }
 
-    // 8. Quarry Boss (Large Sprite + Slam Warning Ring)
+    // 8. Quarry Boss
     if (state.boss) {
       const b = state.boss;
       const bx = Math.round(b.x);
       const by = Math.round(b.y);
 
-      // Telegraphed Seismic Slam Warning Ring
       if (b.slamWindup > 0) {
         ctx.save();
         ctx.strokeStyle = b.slamWindup % 6 < 3 ? "#ef4444" : "#facc15";
@@ -1926,7 +2379,6 @@
         ctx.restore();
       }
 
-      // Boss Aura Shadow
       ctx.fillStyle = "rgba(0,0,0,0.45)";
       ctx.fillRect(bx - 22, by + 16, 44, 10);
 
@@ -1947,7 +2399,7 @@
       drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
     }
 
-    // 10. Player + Material-Colored Pixel Pickaxe
+    // 10. Player + PARKOUR MASTER Badge + Material-Colored Pixel Pickaxe
     const p = state.player;
     const ch = getActiveChar();
     const pick = getActivePickaxe();
@@ -1968,9 +2420,7 @@
     ctx.fillText(ch.avatar, 0, 0);
     ctx.globalAlpha = 1;
 
-    ctx.font = "bold 11px 'Courier New', monospace";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(ch.name.toUpperCase(), 0, -22);
+    drawCharacterHeader(ch.name.toUpperCase());
 
     const baseAngle = Math.atan2(p.dirY, p.dirX);
     const swingOffset = p.swingTimer > 0 ? Math.sin((p.swingTimer / 14) * Math.PI) * 1.5 - 0.75 : 0;
@@ -2001,7 +2451,7 @@
 
     ctx.restore();
 
-    // 12. Top-of-Screen Boss Health Bar HUD (Screen Space)
+    // 12. Top-of-Screen Boss Health Bar HUD
     if (state.boss) {
       const b = state.boss;
       const barW = Math.min(420, canvas.width - 32);
@@ -2056,6 +2506,15 @@
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
 
+  // Toggle Parkour Course Button
+  game.querySelector("#toggleParkourBtn").addEventListener("click", () => {
+    if (state.parkour.active) {
+      exitParkourCourse(false);
+    } else {
+      enterParkourCourse();
+    }
+  });
+
   // Toggle Touch Controls Button
   game.querySelector("#toggleTouchBtn").addEventListener("click", (e) => {
     state.touchVisible = !state.touchVisible;
@@ -2064,7 +2523,7 @@
     saveProgress();
   });
 
-  // Touch D-Pad & Chop Listeners
+  // Touch D-Pad & Action Listeners
   game.querySelectorAll(".dpad-btn").forEach((btn) => {
     const dir = btn.dataset.dir;
     const press = (e) => {
@@ -2088,24 +2547,24 @@
   const touchChopBtn = game.querySelector("#touchChopBtn");
   const triggerTouchChop = (e) => {
     e.preventDefault();
-    swingPickaxe();
+    performPrimaryAction();
   };
   touchChopBtn.addEventListener("touchstart", triggerTouchChop, { passive: false });
   touchChopBtn.addEventListener("mousedown", triggerTouchChop);
 
   // Prospector Phil Dialogue Topics
   const philTips = {
+    parkour: "\"Buy the Parkour Course Blueprint from Hudson (150G) and build it in the Add-Ons tab! Once built, click Enter Parkour, leap across gaps with Space/CHOP, tag all 3 Checkpoint Flags, and reach the Trophy to win the Parkour Chikorita pet and the PARKOUR MASTER badge!\"",
     bosses: "\"A Quarry Boss spawns automatically on every 3rd Zone (Zones 3, 6, 9…), or you can click Summon Boss for 15 Stone! Watch out for their red slam ring—defeating bosses drops permanent Boss Relics and the Mythic Pyre Drake pet!\"",
     addons: "\"Buy Add-On Blueprints from Hudson with Gold, then switch to the Add-Ons tab to craft and upgrade them with Stone, Iron, and Gems! Each built Add-On appears right in your Smashcenter Base Camp!\"",
-    pets: "\"Smashing rocks drops Quarry Eggs for 4 companions (Potato Rock, Chungo, Slab, Grail), and defeating Quarry Bosses can drop the Mythic Pyre Drake (+22 ATK, +45 HP, +20% Loot)!\"",
+    pets: "\"Smashing rocks drops Quarry Eggs for 4 companions (Potato Rock, Chungo, Slab, Grail), defeating Bosses can drop the Mythic Pyre Drake, and beating the Parkour Course unlocks Parkour Chikorita (+14 ATK, +40 HP, +0.85 Speed, +20% Gold)!\"",
     rarities: "\"There are 11 rock tiers out here: Common, Uncommon, Rare, Epic, Mythic, Exotic, Secret, Divine, Galactic, Glitched, and Apex Purple! Higher-tier rocks also have a much higher chance to drop Quarry Eggs!\"",
     materials: "\"Visit Hudson's Shop to upgrade your pickaxe material from Wood → Stone → Copper → Iron → Gold → Diamond → Obsidian → Mythril → Voidsteel → Celestial → Apex Purple Pickaxe!\"",
-    zones: "\"Every quarry zone conceals a wooden ladder under one rock. On Boss Zones, you must defeat the Quarry Boss to unlock the gate!\"",
-    crew: "\"All-Rounder Neil gets +30% Gold and ores, Xavier swings with extra power and HP to crack bosses and high-tier rocks fast, and Carter sprints across the quarry to dodge boss slams!\"",
+    crew: "\"All-Rounder Neil gets +30% Gold and ores, Xavier swings with extra power and HP to crack bosses and high-tier rocks fast, and Carter sprints across the quarry and Parkour Course with +35% speed!\"",
     random: [
-      "\"Prospector Note #104: Collect all 4 Rare Boss Relics (Granite Heart, Wyrmfire Scale, Sovereign Prism, Kronos Void Crown) for permanent passive stat boosts!\"",
-      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with the Ore Refinery (+25%/lv) and Wyrmfire Scale (+20%) for massive payouts at Hudson's Shop!\"",
-      "\"Prospector Note #312: Log into a Miner Account in the Leaderboard tab to cloud-save all your pickaxes, built add-ons, boss relics, and pets across devices!\""
+      "\"Prospector Note #104: Once you unlock the PARKOUR MASTER badge, it displays proudly above your character AND under your Miner Account on the global Leaderboard!\"",
+      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with the Ore Refinery (+25%/lv) and Parkour Chikorita (+20%) for massive payouts at Hudson's Shop!\"",
+      "\"Prospector Note #312: Log into a Miner Account in the Leaderboard tab to cloud-save all your pickaxes, built add-ons, badges, and pets across devices!\""
     ]
   };
 
@@ -2156,7 +2615,7 @@
       e.preventDefault();
     }
     state.keys[e.key] = true;
-    if (e.key === " ") swingPickaxe();
+    if (e.key === " ") performPrimaryAction();
   };
 
   const onKeyUp = (e) => {
@@ -2179,7 +2638,7 @@
     const angle = Math.atan2(clickY - state.player.y, clickX - state.player.x);
     state.player.dirX = Math.cos(angle);
     state.player.dirY = Math.sin(angle);
-    swingPickaxe();
+    performPrimaryAction();
   });
 
   // Summon Boss Button
@@ -2248,7 +2707,7 @@
     state.gold -= state.bootsCost;
     state.bonusSpeed += 0.45;
     state.bootsCost = Math.round(state.bootsCost * 1.55);
-    game.querySelector("#hudsonSpeech").textContent = `"Light as a feather! You'll sprint right out of Boss slam rings."`;
+    game.querySelector("#hudsonSpeech").textContent = `"Light as a feather! You'll sprint right across the Parkour Course and out of Boss slam rings."`;
     addLog("Upgraded Trail Runner Boots!");
     saveProgress();
     updateUI();
@@ -2325,10 +2784,18 @@
     tbody.innerHTML = list.map((row, idx) => {
       const isMe = currentUser && row.uid === currentUser.uid;
       const rankColor = idx === 0 ? "#fbbf24" : idx === 1 ? "#e2e8f0" : idx === 2 ? "#d97706" : "#9ca3af";
+      const hasParkourBadge = Boolean(row.parkourMaster || (isMe && state.parkourMaster));
+      const badgeHtml = hasParkourBadge
+        ? `<div style="margin-top:4px;"><span style="display:inline-block; background:#14532d; border:1px solid #facc15; color:#fef08a; font-size:10px; font-weight:900; padding:1px 6px;"><span class="emoji-color">🏅</span> PARKOUR MASTER</span></div>`
+        : "";
+
       return `
         <tr style="border-bottom:1px solid #2b3a30; background:${isMe ? "rgba(217, 119, 6, 0.2)" : "transparent"};">
           <td style="padding:8px; font-weight:900; color:${rankColor};">#${idx + 1}</td>
-          <td style="padding:8px; font-weight:900; color:${isMe ? "#fde68a" : "#ffffff"};">${row.username}${isMe ? " (YOU)" : ""}</td>
+          <td style="padding:8px; font-weight:900; color:${isMe ? "#fde68a" : "#ffffff"};">
+            <div>${row.username}${isMe ? " (YOU)" : ""}</div>
+            ${badgeHtml}
+          </td>
           <td style="padding:8px; color:#cbd5e1;">${row.miner || "Neil"}</td>
           <td style="padding:8px; font-weight:900; color:#4ade80;">Zone ${row.zone || 1}</td>
           <td style="padding:8px; color:#38bdf8;">LV.${row.level || 1}</td>
@@ -2347,6 +2814,7 @@
         zone: state.floor,
         level: state.level,
         gold: state.gold,
+        parkourMaster: Boolean(state.parkourMaster),
         updatedAt: Date.now()
       });
     }
@@ -2359,15 +2827,18 @@
     const formWrap = game.querySelector("#authFormWrap");
     const loggedInWrap = game.querySelector("#loggedInWrap");
     const statusMsg = game.querySelector("#authStatusMsg");
+    const showcase = game.querySelector("#accountBadgeShowcase");
 
     if (currentUser && loggedInAlias) {
       formWrap.style.display = "none";
       loggedInWrap.style.display = "flex";
-      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Full progress, add-ons, boss relics &amp; scores auto-save to your account!`;
+      statusMsg.innerHTML = `Signed in as <b style="color:#4ade80;">${loggedInAlias}</b> — Full progress, add-ons, badges &amp; scores auto-save to your account!`;
+      if (showcase) showcase.style.display = state.parkourMaster ? "block" : "none";
     } else {
       formWrap.style.display = "flex";
       loggedInWrap.style.display = "none";
       statusMsg.textContent = "Create a Miner Account or log in to cloud-save your gear & post to the Leaderboard!";
+      if (showcase) showcase.style.display = "none";
     }
   }
 
@@ -2455,7 +2926,7 @@
 
   game.querySelector("#syncScoreBtn").addEventListener("click", () => {
     syncAccountToCloud();
-    addLog("☁️ Synced full save & score to your account!");
+    addLog("☁️ Synced full save, badges & score to your account!");
   });
 
   game.querySelector("#resetSaveBtn").addEventListener("click", () => {
