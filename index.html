@@ -67,6 +67,7 @@
           <button class="tab-btn" data-tab="hudsonTab"><span class="emoji-color">🏪</span> Hudson's Shop</button>
           <button class="tab-btn" data-tab="petsTab"><span class="emoji-color">🥚</span> Pets (<span id="tabEggCount">0</span>)</button>
           <button class="tab-btn" data-tab="philTab"><span class="emoji-color">🕵️‍♂️</span> Prospector Phil</button>
+          <button class="tab-btn" data-tab="leaderboardTab"><span class="emoji-color">🏆</span> Leaderboard</button>
         </div>
       </div>
 
@@ -244,6 +245,55 @@
             </div>
           </div>
         </div>
+
+        <!-- TAB 5: ONLINE LEADERBOARD & MINER ACCOUNTS -->
+        <div id="leaderboardTab" class="tab-panel">
+          <div class="npc-screen">
+            <div class="npc-card-wrap">
+              <div class="npc-header">
+                <div class="npc-portrait emoji-color">🏆</div>
+                <div style="flex:1;">
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">SMASHCENTER ONLINE LEADERBOARD</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">PEER-TO-PEER ACCOUNT RANKINGS</div>
+                  <div class="npc-speech" id="authStatusMsg">Create a Miner Account or log in to post your Zone, Level &amp; Gold online!</div>
+
+                  <!-- Account Form (Shown when logged out) -->
+                  <div id="authFormWrap" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
+                    <input id="authUsername" type="text" maxlength="16" placeholder="Username" style="background:#0c120e; border:2px solid #4a6352; color:#fff; padding:6px 8px; font-family:inherit; font-size:12px;" />
+                    <input id="authPassword" type="password" placeholder="Password (8+ chars)" style="background:#0c120e; border:2px solid #4a6352; color:#fff; padding:6px 8px; font-family:inherit; font-size:12px;" />
+                    <button class="mini-btn" id="signUpBtn">CREATE ACCOUNT</button>
+                    <button class="mini-btn secondary" id="signInBtn">LOG IN</button>
+                  </div>
+
+                  <!-- Logged-in Controls (Hidden until signed in) -->
+                  <div id="loggedInWrap" style="display:none; margin-top:10px; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <button class="mini-btn" id="syncScoreBtn"><span class="emoji-color">📡</span> POST SCORE</button>
+                    <button class="mini-btn secondary" id="signOutBtn" style="background:#991b1b; border-color:#f87171;">LOG OUT</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rankings Table -->
+              <div style="background:#1b2820; border:3px solid #3f5747; padding:12px; overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                  <thead>
+                    <tr style="border-bottom:2px solid #3f5747; color:#fbbf24;">
+                      <th style="padding:8px;">RANK</th>
+                      <th style="padding:8px;">MINER TAG</th>
+                      <th style="padding:8px;">CLASS</th>
+                      <th style="padding:8px;">ZONE</th>
+                      <th style="padding:8px;">LEVEL</th>
+                      <th style="padding:8px;">GOLD</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboardBody">
+                    <tr><td colspan="6" style="padding:12px; color:#9ca3af;">Connecting to Smashcenter network...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- RIGHT PIXEL SIDEBAR -->
@@ -296,6 +346,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
