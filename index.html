@@ -19,21 +19,21 @@
           <span class="emoji-color">⛏️</span>
           <span class="hero-logo-text">ROCK CHOPPER</span>
         </h1>
-        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, forge new pickaxe materials with Hudson, and get insider tips from Prospector Phil.</p>
+        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, hatch rock pets from quarry eggs, and get insider tips from Prospector Phil.</p>
 
         <div class="char-grid">
           <div class="char-card selected" data-char="neil">
-            <div class="char-avatar emoji-color">💯</div>
+            <div class="char-avatar emoji-color">🧒🏽</div>
             <div class="char-name">Neil</div>
             <div class="char-role">All-Rounder</div>
             <div class="char-stats">
-              <span class="emoji-color">❤️</span> 120 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 6 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Normal<br>
+              <span class="emoji-color">❤️</span> 110 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 6 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Normal<br>
               <b>Perk:</b> +30% Gold &amp; extra ore drops from rare rocks
             </div>
           </div>
 
           <div class="char-card" data-char="xavier">
-            <div class="char-avatar emoji-color">✊</div>
+            <div class="char-avatar emoji-color">🧑🏾‍🎤</div>
             <div class="char-name">Xavier</div>
             <div class="char-role">Heavy Crusher</div>
             <div class="char-stats">
@@ -43,17 +43,17 @@
           </div>
 
           <div class="char-card" data-char="carter">
-            <div class="char-avatar emoji-color">💎</div>
+            <div class="char-avatar emoji-color">👱🏻‍♂️</div>
             <div class="char-name">Carter</div>
             <div class="char-role">Trailblazer Scout</div>
             <div class="char-stats">
-              <span class="emoji-color">❤️</span> 105 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 6 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Fast<br>
+              <span class="emoji-color">❤️</span> 95 HP &nbsp;|&nbsp; <span class="emoji-color">⚔️</span> 6 ATK &nbsp;|&nbsp; <span class="emoji-color">🥾</span> Fast<br>
               <b>Perk:</b> +35% Move Speed across the quarry grounds
             </div>
           </div>
         </div>
 
-        <button class="start-btn" id="startGameBtn"><span class="emoji-color">▶</span> ENTER SmashCenter</button>
+        <button class="start-btn" id="startGameBtn"><span class="emoji-color">▶</span> ENTER THE QUARRY</button>
       </div>
     </div>
 
@@ -63,12 +63,13 @@
         <h1 class="game-title">
           <span class="emoji-color">⛏️</span>
           <span>ROCK CHOPPER</span>
-          <span id="activeMinerBadge" style="font-size:11px; background:#24332a; border:2px solid #4a6352; color:#e2e8f0; padding:2px 8px;"><span class="emoji-color">😃</span> Neil</span>
+          <span id="activeMinerBadge" style="font-size:11px; background:#24332a; border:2px solid #4a6352; color:#e2e8f0; padding:2px 8px;"><span class="emoji-color">🧒🏽</span> Neil</span>
         </h1>
 
         <div class="toolbar-tabs">
           <button class="tab-btn active" data-tab="quarryTab"><span class="emoji-color">⛏️</span> Quarry</button>
           <button class="tab-btn" data-tab="hudsonTab"><span class="emoji-color">🏪</span> Hudson's Shop</button>
+          <button class="tab-btn" data-tab="petsTab"><span class="emoji-color">🥚</span> Pets (<span id="tabEggCount">0</span>)</button>
           <button class="tab-btn" data-tab="philTab"><span class="emoji-color">🕵️‍♂️</span> Prospector Phil</button>
         </div>
       </div>
@@ -127,7 +128,7 @@
               <div class="npc-header">
                 <div class="npc-portrait emoji-color">🧑‍💼</div>
                 <div>
-                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">HUDSON — SHOPKEEPER</div>
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">HUDSON — QUARRY OUTFITTER</div>
                   <div style="font-size:11px; color:#9ca3af; font-weight:800;">PICKAXE FORGE &amp; GENERAL STORE</div>
                   <div class="npc-speech" id="hudsonSpeech">"Welcome to my pixel outpost! Bring me your ores and I'll forge your pickaxe from Wood all the way up to Apex material!"</div>
                 </div>
@@ -181,20 +182,46 @@
           </div>
         </div>
 
-        <!-- TAB 3: PROSPECTOR PHIL -->
+        <!-- TAB 3: QUARRY PETS & EGG HATCHERY -->
+        <div id="petsTab" class="tab-panel">
+          <div class="npc-screen">
+            <div class="npc-card-wrap">
+              <div class="npc-header">
+                <div class="npc-portrait emoji-color">🥚</div>
+                <div>
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">QUARRY HATCHERY &amp; PET PEN</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">SMASH BOULDERS TO FIND QUARRY EGGS</div>
+                  <div class="npc-speech" id="petHatchSpeech">
+                    Quarry Eggs in Satchel: <b style="color:#fde68a;" id="hatchEggCount">0</b> &nbsp;|&nbsp;
+                    Equipped Companion: <b style="color:#4ade80;" id="equippedPetName">None</b>
+                  </div>
+                  <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="mini-btn" id="hatchEggBtn"><span class="emoji-color">🐣</span> HATCH QUARRY EGG (<span id="btnEggCount">0</span>)</button>
+                    <button class="mini-btn secondary" id="unequipPetBtn">UNEQUIP PET</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="shop-grid" id="petRosterGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: PROSPECTOR PHIL -->
         <div id="philTab" class="tab-panel">
           <div class="npc-screen">
             <div class="npc-card-wrap">
               <div class="npc-header">
                 <div class="npc-portrait emoji-color">🕵️‍♂️</div>
                 <div>
-                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — The Detective of the Rocks</div>
-                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">RARITY &amp; MATERIAL EXPERT</div>
-                  <div class="npc-speech" id="philSpeech">"Howdy, partner! I've been tracking all 11 rock rarities out here—including Secret, Divine, Galactic, Glitched, and Apex Purple! Pick a topic below."</div>
+                  <div style="font-size:20px; font-weight:900; color:#fbbf24;">PROSPECTOR PHIL — VETERAN ROCKHOUND</div>
+                  <div style="font-size:11px; color:#9ca3af; font-weight:800;">RARITY, PET &amp; MATERIAL EXPERT</div>
+                  <div class="npc-speech" id="philSpeech">"Howdy, partner! I've been tracking all 11 rock rarities and 4 rare rock pets out here—including Potato Rock, Chungo, Slab, and Grail! Pick a topic below."</div>
                 </div>
               </div>
 
               <div class="tip-topics">
+                <button class="topic-btn" data-topic="pets"><span class="emoji-color">🐾</span> Quarry Pets &amp; Eggs</button>
                 <button class="topic-btn" data-topic="rarities"><span class="emoji-color">🔍</span> All 11 Rarity Tiers</button>
                 <button class="topic-btn" data-topic="materials"><span class="emoji-color">⛏️</span> Pickaxe Materials</button>
                 <button class="topic-btn" data-topic="zones"><span class="emoji-color">🗺️</span> Advancing Zones</button>
@@ -227,15 +254,19 @@
       <div class="side-stack">
         <div style="font-weight:900; color:#f59e0b; font-size:13px;"><span class="emoji-color">🎒</span> SATCHEL &amp; EQUIPPED TOOL</div>
         <div style="background:#0c120e; border:2px solid #34493b; padding:6px 8px; font-size:12px; font-weight:900;">
-          <span class="emoji-color">⛏️</span> Tool: <span id="equippedPickLabel" style="color:#fde68a;">Wood Pickaxe</span>
+          <span class="emoji-color">⛏️</span> Tool: <span id="equippedPickLabel" style="color:#fde68a;">Wood Pickaxe</span><br>
+          <span class="emoji-color">🐾</span> Pet: <span id="sidePetLabel" style="color:#4ade80;">None</span>
         </div>
         <div class="inv-row">
           <div><span class="emoji-color">🪨</span> STN<br><span id="invStone">0</span></div>
           <div><span class="emoji-color">🔩</span> IRN<br><span id="invIron">0</span></div>
           <div><span class="emoji-color">💎</span> GEM<br><span id="invGems">0</span></div>
-          <div><span class="emoji-color">⚔️</span> ATK<br><span id="statAtk">6</span></div>
+          <div><span class="emoji-color">🥚</span> EGG<br><span id="invEggs">0</span></div>
         </div>
-        <button class="mini-btn" id="sellOresBtn" style="width:100%;"><span class="emoji-color">💰</span> Quick-Sell (<span id="sideSellPreview">0</span>G)</button>
+        <div style="display:flex; gap:6px;">
+          <button class="mini-btn" id="sellOresBtn" style="flex:1;"><span class="emoji-color">💰</span> Sell (<span id="sideSellPreview">0</span>G)</button>
+          <button class="mini-btn secondary" id="sideHatchBtn" style="flex:1;"><span class="emoji-color">🐣</span> Hatch (<span id="sideEggCount">0</span>)</button>
+        </div>
 
         <div style="font-weight:900; color:#f59e0b; font-size:12px; margin-top:2px;"><span class="emoji-color">✨</span> 11 ROCK RARITIES</div>
         <div class="rarity-legend">
@@ -253,11 +284,18 @@
         </div>
 
         <div style="background:#0c120e; border:2px solid #34493b; padding:8px; font-size:11px; color:#cbd5e1;">
+          <b><span class="emoji-color">⚔️</span> ATK:</b> <span id="statAtk">6</span> &nbsp;|&nbsp;
           <b><span class="emoji-color">🎯</span> TARGET:</b> <span id="targetRockInfo">Walk near a rock</span>
         </div>
 
-        <div style="font-weight:900; color:#9ca3af; font-size:12px;"><span class="emoji-color">📜</span> QUARRY LOG</div>
-        <div class="combat-log" id="combatLog">Welcome to the pixel quarry! Forge new pickaxe materials at Hudson's Shop.</div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:900; color:#9ca3af; font-size:12px;"><span class="emoji-color">📜</span> QUARRY LOG</span>
+          <div style="display:flex; gap:4px;">
+            <button class="mini-btn" id="manualSaveBtn" style="padding:3px 7px; font-size:10px;"><span class="emoji-color">💾</span> Save</button>
+            <button class="mini-btn secondary" id="resetSaveBtn" style="padding:3px 7px; font-size:10px; background:#991b1b; border-color:#f87171;">Reset</button>
+          </div>
+        </div>
+        <div class="combat-log" id="combatLog">Welcome to the pixel quarry! Progress saves automatically.</div>
       </div>
     </div>
   </div>

@@ -11,7 +11,7 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Fixes mobile browser address-bar cutoff */
+  height: 100dvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -77,7 +77,7 @@
 #rock-chopper-game .title-content {
   position: relative;
   z-index: 2;
-  margin: auto; /* Centers vertically without clipping top overflow when scrolling */
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -450,7 +450,7 @@
   background: #f59e0b;
 }
 
-/* NPC DIALOGUE & SHOP PANELS (HUDSON & PHIL) */
+/* NPC DIALOGUE & SHOP PANELS (HUDSON, PETS & PHIL) */
 #rock-chopper-game .npc-screen {
   flex: 1;
   min-height: 0;
@@ -526,6 +526,11 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 10px;
+}
+
+#rock-chopper-game .shop-item.equipped-pet {
+  border-color: #fbbf24;
+  background: #233329;
 }
 
 #rock-chopper-game .tip-topics {

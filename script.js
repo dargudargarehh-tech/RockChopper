@@ -1,4 +1,5 @@
 (() => {
+  const SAVE_KEY = "rock_chopper_save_v1";
   const game = document.getElementById("rock-chopper-game");
   const canvas = game.querySelector("#mineCanvas");
   const ctx = canvas.getContext("2d");
@@ -34,6 +35,58 @@
     }
   };
 
+  // Quarry Pets Catalog
+  const PET_CATALOG = {
+    potato_rock: {
+      id: "potato_rock",
+      name: "Potato Rock",
+      rarity: "Common",
+      color: "#d97706",
+      desc: "A bumpy spud-shaped boulder. Boosts Gold & ore sell value by +15%.",
+      hatchWeight: 45,
+      atkBonus: 0,
+      hpBonus: 0,
+      speedBonus: 0,
+      lootBonus: 0.15
+    },
+    chungo: {
+      id: "chungo",
+      name: "Chungo",
+      rarity: "Uncommon",
+      color: "#f472b6",
+      desc: "A Diglett-shaped piece of pink quartz. Boosts movement speed (+0.7).",
+      hatchWeight: 30,
+      atkBonus: 0,
+      hpBonus: 0,
+      speedBonus: 0.7,
+      lootBonus: 0
+    },
+    slab: {
+      id: "slab",
+      name: "Slab",
+      rarity: "Rare",
+      color: "#38bdf8",
+      desc: "A sturdy flat slab of quarry stone. Adds +6 ATK and +35 Max HP.",
+      hatchWeight: 18,
+      atkBonus: 6,
+      hpBonus: 35,
+      speedBonus: 0,
+      lootBonus: 0
+    },
+    grail: {
+      id: "grail",
+      name: "Grail",
+      rarity: "Epic",
+      color: "#c084fc",
+      desc: "A hovering mini meteor! Adds +15 ATK, +25% Gold, and +0.4 Speed.",
+      hatchWeight: 7,
+      atkBonus: 15,
+      hpBonus: 20,
+      speedBonus: 0.4,
+      lootBonus: 0.25
+    }
+  };
+
   // Pickaxe Material Tiers
   const PICKAXE_MATERIALS = [
     { name: "Wood Pickaxe", color: "#b45309", atkBonus: 0, cost: 20 },
@@ -63,6 +116,7 @@
       dropType: "stone",
       dropCount: 1,
       goldBonus: 0,
+      eggChance: 0.08,
       dropEmoji: "🪨"
     },
     {
@@ -77,6 +131,7 @@
       dropType: "iron",
       dropCount: 2,
       goldBonus: 0,
+      eggChance: 0.14,
       dropEmoji: "🔩"
     },
     {
@@ -91,6 +146,7 @@
       dropType: "gem",
       dropCount: 1,
       goldBonus: 5,
+      eggChance: 0.22,
       dropEmoji: "💎"
     },
     {
@@ -105,6 +161,7 @@
       dropType: "gem",
       dropCount: 3,
       goldBonus: 12,
+      eggChance: 0.32,
       dropEmoji: "💎"
     },
     {
@@ -119,6 +176,7 @@
       dropType: "gem",
       dropCount: 5,
       goldBonus: 25,
+      eggChance: 0.45,
       dropEmoji: "👑"
     },
     {
@@ -133,6 +191,7 @@
       dropType: "gem",
       dropCount: 8,
       goldBonus: 45,
+      eggChance: 0.58,
       dropEmoji: "🌺"
     },
     {
@@ -147,6 +206,7 @@
       dropType: "gem",
       dropCount: 12,
       goldBonus: 75,
+      eggChance: 0.70,
       dropEmoji: "🗝️"
     },
     {
@@ -161,6 +221,7 @@
       dropType: "gem",
       dropCount: 18,
       goldBonus: 120,
+      eggChance: 0.80,
       dropEmoji: "👼"
     },
     {
@@ -175,6 +236,7 @@
       dropType: "gem",
       dropCount: 26,
       goldBonus: 190,
+      eggChance: 0.90,
       dropEmoji: "🌌"
     },
     {
@@ -189,6 +251,7 @@
       dropType: "gem",
       dropCount: 38,
       goldBonus: 300,
+      eggChance: 0.95,
       dropEmoji: "👾"
     },
     {
@@ -203,6 +266,7 @@
       dropType: "gem",
       dropCount: 55,
       goldBonus: 500,
+      eggChance: 1.0,
       dropEmoji: "🔮"
     }
   ];
@@ -228,6 +292,14 @@
     stone: 0,
     iron: 0,
     gems: 0,
+    eggs: 0,
+    ownedPets: {
+      potato_rock: 0,
+      chungo: 0,
+      slab: 0,
+      grail: 0
+    },
+    equippedPet: null,
     armorCost: 25,
     bootsCost: 30,
     touchVisible: true,
@@ -238,6 +310,10 @@
       dirY: 0,
       swingTimer: 0,
       invuln: 0
+    },
+    petPos: {
+      x: TILE * 2.0,
+      y: TILE * 2.5
     },
     grid: [],
     trees: [],
@@ -250,8 +326,113 @@
     touchDirs: { up: false, down: false, left: false, right: false }
   };
 
+  // =========================================================
+  // PROGRESS SAVER (localStorage)
+  // =========================================================
+  function saveProgress(showNotice = false) {
+    try {
+      const payload = {
+        selectedChar: state.selectedChar,
+        pickTier: state.pickTier,
+        level: state.level,
+        xp: state.xp,
+        nextXp: state.nextXp,
+        gold: state.gold,
+        floor: state.floor,
+        hp: state.hp,
+        bonusHp: state.bonusHp,
+        bonusSpeed: state.bonusSpeed,
+        stone: state.stone,
+        iron: state.iron,
+        gems: state.gems,
+        eggs: state.eggs,
+        ownedPets: state.ownedPets,
+        equippedPet: state.equippedPet,
+        armorCost: state.armorCost,
+        bootsCost: state.bootsCost,
+        touchVisible: state.touchVisible
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+      if (showNotice) addLog("💾 Progress saved!");
+    } catch (err) {
+      // Ignore storage quota errors in restricted frames
+    }
+  }
+
+  function loadProgress() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (data.selectedChar && characters[data.selectedChar]) state.selectedChar = data.selectedChar;
+      if (typeof data.pickTier === "number") state.pickTier = Math.min(PICKAXE_MATERIALS.length - 1, Math.max(0, data.pickTier));
+      if (typeof data.level === "number") state.level = Math.max(1, data.level);
+      if (typeof data.xp === "number") state.xp = Math.max(0, data.xp);
+      if (typeof data.nextXp === "number") state.nextXp = Math.max(30, data.nextXp);
+      if (typeof data.gold === "number") state.gold = Math.max(0, data.gold);
+      if (typeof data.floor === "number") state.floor = Math.max(1, data.floor);
+      if (typeof data.bonusHp === "number") state.bonusHp = Math.max(0, data.bonusHp);
+      if (typeof data.bonusSpeed === "number") state.bonusSpeed = Math.max(0, data.bonusSpeed);
+      if (typeof data.stone === "number") state.stone = Math.max(0, data.stone);
+      if (typeof data.iron === "number") state.iron = Math.max(0, data.iron);
+      if (typeof data.gems === "number") state.gems = Math.max(0, data.gems);
+      if (typeof data.eggs === "number") state.eggs = Math.max(0, data.eggs);
+      if (data.ownedPets && typeof data.ownedPets === "object") {
+        for (const k of Object.keys(state.ownedPets)) {
+          if (typeof data.ownedPets[k] === "number") state.ownedPets[k] = Math.max(0, data.ownedPets[k]);
+        }
+      }
+      if (data.equippedPet && PET_CATALOG[data.equippedPet] && state.ownedPets[data.equippedPet] > 0) {
+        state.equippedPet = data.equippedPet;
+      }
+      if (typeof data.armorCost === "number") state.armorCost = Math.max(25, data.armorCost);
+      if (typeof data.bootsCost === "number") state.bootsCost = Math.max(30, data.bootsCost);
+      if (typeof data.touchVisible === "boolean") state.touchVisible = data.touchVisible;
+
+      state.maxHp = getTotalMaxHp();
+      state.hp = typeof data.hp === "number" ? Math.min(state.maxHp, Math.max(1, data.hp)) : state.maxHp;
+
+      game.querySelectorAll(".char-card").forEach((c) => {
+        c.classList.toggle("selected", c.dataset.char === state.selectedChar);
+      });
+      game.querySelector("#touchControls").classList.toggle("hidden", !state.touchVisible);
+      game.querySelector("#toggleTouchBtn").innerHTML = `<span class="emoji-color">📱</span> Touch: ${state.touchVisible ? "ON" : "OFF"}`;
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function resetProgress() {
+    localStorage.removeItem(SAVE_KEY);
+    state.selectedChar = "neil";
+    state.pickTier = 0;
+    state.level = 1;
+    state.xp = 0;
+    state.nextXp = 30;
+    state.gold = 0;
+    state.floor = 1;
+    state.bonusHp = 0;
+    state.bonusSpeed = 0;
+    state.stone = 0;
+    state.iron = 0;
+    state.gems = 0;
+    state.eggs = 0;
+    state.ownedPets = { potato_rock: 0, chungo: 0, slab: 0, grail: 0 };
+    state.equippedPet = null;
+    state.armorCost = 25;
+    state.bootsCost = 30;
+    applyCharacterStats(true);
+    generateFloor();
+    addLog("🗑️ Save data reset to fresh game.");
+  }
+
   function getActiveChar() {
     return characters[state.selectedChar];
+  }
+
+  function getActivePet() {
+    return state.equippedPet ? PET_CATALOG[state.equippedPet] : null;
   }
 
   function getActivePickaxe() {
@@ -259,19 +440,27 @@
   }
 
   function getTotalAtk() {
-    return getActiveChar().baseAtk + getActivePickaxe().atkBonus + (state.level - 1) * 2;
+    const pet = getActivePet();
+    return getActiveChar().baseAtk + getActivePickaxe().atkBonus + (state.level - 1) * 2 + (pet ? pet.atkBonus : 0);
   }
 
   function getTotalMaxHp() {
-    return getActiveChar().baseHp + state.bonusHp + (state.level - 1) * 15;
+    const pet = getActivePet();
+    return getActiveChar().baseHp + state.bonusHp + (state.level - 1) * 15 + (pet ? pet.hpBonus : 0);
   }
 
   function getTotalSpeed() {
-    return getActiveChar().speed + state.bonusSpeed;
+    const pet = getActivePet();
+    return getActiveChar().speed + state.bonusSpeed + (pet ? pet.speedBonus : 0);
+  }
+
+  function getTotalLootMult() {
+    const pet = getActivePet();
+    return getActiveChar().lootMult + (pet ? pet.lootBonus : 0);
   }
 
   function getSellValue() {
-    const mult = getActiveChar().lootMult;
+    const mult = getTotalLootMult();
     return Math.round((state.stone * 3 + state.iron * 9 + state.gems * 24) * mult);
   }
 
@@ -330,8 +519,91 @@
       state.nextXp = Math.round(state.nextXp * 1.45);
       state.maxHp = getTotalMaxHp();
       state.hp = state.maxHp;
-      addLog(`LEVEL UP! getActiveChar().namereachedLV.{state.level}!`);
+      addLog(`LEVEL UP! ${getActiveChar().name} reached LV.${state.level}!`);
       addFloatingText(state.player.x, state.player.y - 24, "LEVEL UP!", "#38bdf8");
+    }
+  }
+
+  // =========================================================
+  // EGG HATCHING & PET ROSTER UI
+  // =========================================================
+  function hatchEgg() {
+    if (state.eggs <= 0) return;
+    state.eggs -= 1;
+
+    const list = Object.values(PET_CATALOG);
+    const totalWeight = list.reduce((sum, p) => sum + p.hatchWeight, 0);
+    let roll = Math.random() * totalWeight;
+    let hatched = list[0];
+
+    for (const pet of list) {
+      roll -= pet.hatchWeight;
+      if (roll <= 0) {
+        hatched = pet;
+        break;
+      }
+    }
+
+    state.ownedPets[hatched.id] = (state.ownedPets[hatched.id] || 0) + 1;
+    if (!state.equippedPet) {
+      state.equippedPet = hatched.id;
+      state.maxHp = getTotalMaxHp();
+      state.hp = Math.min(state.maxHp, state.hp + hatched.hpBonus);
+    }
+
+    const speech = game.querySelector("#petHatchSpeech");
+    if (speech) {
+      speech.innerHTML = `🐣 Your Quarry Egg cracked open and hatched <b style="color:${hatched.color};">${hatched.name}</b> (${hatched.rarity})!`;
+    }
+    addLog(`🐣 Hatched ${hatched.name} (${hatched.rarity}) from a Quarry Egg!`);
+    addFloatingText(state.player.x, state.player.y - 28, `HATCHED ${hatched.name.toUpperCase()}!`, hatched.color);
+    saveProgress();
+    updateUI();
+  }
+
+  function equipPet(petId) {
+    if (petId && (!PET_CATALOG[petId] || state.ownedPets[petId] <= 0)) return;
+    state.equippedPet = petId;
+    state.maxHp = getTotalMaxHp();
+    if (state.hp > state.maxHp) state.hp = state.maxHp;
+    saveProgress();
+    updateUI();
+  }
+
+  function renderPetRoster() {
+    const grid = game.querySelector("#petRosterGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    for (const pet of Object.values(PET_CATALOG)) {
+      const count = state.ownedPets[pet.id] || 0;
+      const isEquipped = state.equippedPet === pet.id;
+
+      const card = document.createElement("div");
+      card.className = "shop-item" + (isEquipped ? " equipped-pet" : "");
+      card.innerHTML = `
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:900; font-size:15px; color:${pet.color};">${pet.name}</span>
+            <span style="font-size:11px; font-weight:900; color:#cbd5e1;">Owned: ${count}</span>
+          </div>
+          <div style="font-size:11px; font-weight:800; color:${pet.color}; text-transform:uppercase; margin-top:2px;">${pet.rarity} Companion</div>
+          <div style="font-size:12px; color:#cbd5e1; margin-top:6px;">${pet.desc}</div>
+        </div>
+        <button class="mini-btn ${isEquipped ? "secondary" : ""}" ${count === 0 ? "disabled" : ""}>
+          ${count === 0 ? "LOCKED (HATCH EGGS)" : isEquipped ? "★ EQUIPPED" : "EQUIP COMPANION"}
+        </button>
+      `;
+
+      const btn = card.querySelector("button");
+      btn.addEventListener("click", () => {
+        if (count > 0) {
+          equipPet(pet.id);
+          addLog(`🐾 Equipped ${pet.name}!`);
+        }
+      });
+
+      grid.appendChild(card);
     }
   }
 
@@ -361,6 +633,8 @@
 
     state.player.x = TILE * 2.5;
     state.player.y = TILE * 2.5;
+    state.petPos.x = TILE * 2.0;
+    state.petPos.y = TILE * 2.5;
 
     const gateR = ROWS - 3 - Math.floor(Math.random() * 3);
     const gateC = COLS - 3 - Math.floor(Math.random() * 4);
@@ -440,18 +714,39 @@
   function updateUI() {
     const curPick = getActivePickaxe();
     const nextPick = PICKAXE_MATERIALS[state.pickTier + 1];
+    const activePet = getActivePet();
 
     game.querySelector("#rpgLevel").textContent = state.level;
     game.querySelector("#rpgXp").textContent = state.xp;
     game.querySelector("#rpgNextXp").textContent = state.nextXp;
-    game.querySelector("#hpText").textContent = `Math.max(0,Math.ceil(state.hp))/{state.maxHp}`;
+    game.querySelector("#hpText").textContent = `${Math.max(0, Math.ceil(state.hp))}/${state.maxHp}`;
     game.querySelector("#goldText").textContent = state.gold.toLocaleString();
     game.querySelector("#floorText").textContent = state.floor;
 
     game.querySelector("#invStone").textContent = state.stone;
     game.querySelector("#invIron").textContent = state.iron;
     game.querySelector("#invGems").textContent = state.gems;
+    game.querySelector("#invEggs").textContent = state.eggs;
     game.querySelector("#statAtk").textContent = getTotalAtk();
+
+    game.querySelector("#tabEggCount").textContent = state.eggs;
+    game.querySelector("#hatchEggCount").textContent = state.eggs;
+    game.querySelector("#btnEggCount").textContent = state.eggs;
+    game.querySelector("#sideEggCount").textContent = state.eggs;
+
+    const sidePet = game.querySelector("#sidePetLabel");
+    const eqPetName = game.querySelector("#equippedPetName");
+    if (activePet) {
+      sidePet.textContent = activePet.name;
+      sidePet.style.color = activePet.color;
+      eqPetName.textContent = `${activePet.name} (${activePet.rarity})`;
+      eqPetName.style.color = activePet.color;
+    } else {
+      sidePet.textContent = "None";
+      sidePet.style.color = "#9ca3af";
+      eqPetName.textContent = "None";
+      eqPetName.style.color = "#9ca3af";
+    }
 
     const pickLabel = game.querySelector("#equippedPickLabel");
     pickLabel.textContent = curPick.name;
@@ -462,7 +757,7 @@
 
     const upgPickBtn = game.querySelector("#upgPick");
     if (nextPick) {
-      game.querySelector("#shopNextPick").textContent = `nextPick.name(+{nextPick.atkBonus} ATK)`;
+      game.querySelector("#shopNextPick").textContent = `${nextPick.name} (+${nextPick.atkBonus} ATK)`;
       game.querySelector("#shopNextPick").style.color = nextPick.color;
       upgPickBtn.innerHTML = `FORGE (${nextPick.cost.toLocaleString()}G)`;
       upgPickBtn.disabled = state.gold < nextPick.cost;
@@ -485,6 +780,11 @@
     game.querySelector("#healBtn").disabled = state.gold < 15 || state.hp >= state.maxHp;
     game.querySelector("#sellOresBtn").disabled = sellVal === 0;
     game.querySelector("#hudsonSellBtn").disabled = sellVal === 0;
+    game.querySelector("#hatchEggBtn").disabled = state.eggs <= 0;
+    game.querySelector("#sideHatchBtn").disabled = state.eggs <= 0;
+    game.querySelector("#unequipPetBtn").disabled = !state.equippedPet;
+
+    renderPetRoster();
   }
 
   function isTileBlocked(px, py) {
@@ -515,13 +815,14 @@
         addFloatingText(e.x, e.y - 16, `-${totalAtk}`, "#f87171");
 
         if (e.hp <= 0) {
-          addLog(`${getActiveChar().name} defeated e.name!(+{10 + state.floor * 3} XP)`);
+          addLog(`${getActiveChar().name} defeated ${e.name}! (+${10 + state.floor * 3} XP)`);
           gainXp(10 + state.floor * 3);
           state.drops.push({ x: e.x, y: e.y, type: "gold", amount: 7 + state.floor * 2, emoji: "💰" });
           if (Math.random() < 0.35) {
             state.drops.push({ x: e.x + 10, y: e.y, type: "potion", amount: 30, emoji: "🧪" });
           }
           state.enemies.splice(i, 1);
+          saveProgress();
         }
       }
     }
@@ -538,7 +839,7 @@
         addFloatingText(cx, cy - 12, `-${totalAtk}`, cell.rarity.color);
 
         if (cell.hp <= 0) {
-          const mult = getActiveChar().lootMult;
+          const mult = getTotalLootMult();
           gainXp(cell.rarity.xp + state.floor);
 
           if (cell.hasGate) {
@@ -566,10 +867,23 @@
               });
             }
 
+            // Chance to drop a Quarry Egg from smashed boulders
+            if (Math.random() < cell.rarity.eggChance) {
+              state.drops.push({
+                x: cx,
+                y: cy - 8,
+                type: "egg",
+                amount: 1,
+                emoji: "🥚"
+              });
+              addLog(`🥚 A Quarry Egg popped out of the ${cell.rarity.label} rock!`);
+            }
+
             if (cell.rarity.xp >= 24) {
               addLog(`★ Shattered a [${cell.rarity.label.toUpperCase()}] boulder!`);
             }
           }
+          saveProgress();
         }
       }
     }
@@ -617,14 +931,20 @@
       }
     }
 
+    // Smooth pet companion follow
+    const targetPetX = p.x - p.dirX * 28;
+    const targetPetY = p.y - p.dirY * 28 + 6;
+    state.petPos.x += (targetPetX - state.petPos.x) * 0.12;
+    state.petPos.y += (targetPetY - state.petPos.y) * 0.12;
+
     const lookR = Math.floor((p.y + p.dirY * 42) / TILE);
     const lookC = Math.floor((p.x + p.dirX * 42) / TILE);
     const targetInfo = game.querySelector("#targetRockInfo");
     if (state.grid[lookR] && state.grid[lookR][lookC] && state.grid[lookR][lookC].type === "rock") {
       const rk = state.grid[lookR][lookC];
-      targetInfo.innerHTML = `<span style="color:rk.rarity.color;font-weight:900;">[{rk.rarity.label.toUpperCase()}]</span> (rk.hp/{rk.maxHp} HP)`;
+      targetInfo.innerHTML = `<span style="color:${rk.rarity.color}; font-weight:900;">[${rk.rarity.label.toUpperCase()}]</span> (${rk.hp}/${rk.maxHp} HP)`;
     } else {
-      targetInfo.textContent = "Walk near a rock to inspect";
+      targetInfo.textContent = "Walk near a rock";
     }
 
     const pr = Math.floor(p.y / TILE);
@@ -632,6 +952,7 @@
     if (state.grid[pr] && state.grid[pr][pc] && state.grid[pr][pc].type === "gate") {
       state.floor += 1;
       addLog(`⛰️ Entered Zone ${state.floor}! Higher Galactic & Apex odds!`);
+      saveProgress();
       generateFloor();
       return;
     }
@@ -643,11 +964,16 @@
         if (d.type === "stone") state.stone += d.amount;
         if (d.type === "iron") state.iron += d.amount;
         if (d.type === "gem") state.gems += d.amount;
+        if (d.type === "egg") {
+          state.eggs += d.amount;
+          addFloatingText(p.x, p.y - 22, "+1 QUARRY EGG!", "#fde68a");
+        }
         if (d.type === "potion") {
           state.hp = Math.min(state.maxHp, state.hp + d.amount);
           addFloatingText(p.x, p.y - 18, `+${d.amount} HP`, "#4ade80");
         }
         state.drops.splice(i, 1);
+        saveProgress();
         updateUI();
       }
     }
@@ -669,6 +995,7 @@
           addLog(`💀 ${getActiveChar().name} fainted! Returned to Zone 1 Camp.`);
           state.floor = 1;
           state.hp = state.maxHp;
+          saveProgress();
           generateFloor();
           return;
         }
@@ -689,6 +1016,93 @@
       state.floatingTexts[i].life--;
       if (state.floatingTexts[i].life <= 0) state.floatingTexts.splice(i, 1);
     }
+  }
+
+  // Draw Custom Pixel-Art Quarry Pet Companion
+  function drawEquippedPet(pet, px, py) {
+    const bob = Math.round(Math.sin(Date.now() * 0.008) * 2);
+    const x = Math.round(px);
+    const y = Math.round(py) + bob;
+
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(-9, 8 - bob, 18, 4);
+
+    if (pet.id === "potato_rock") {
+      // Potato Rock: bumpy potato-shaped rock
+      ctx.fillStyle = "#78350f";
+      ctx.fillRect(-9, -6, 18, 12);
+      ctx.fillRect(-7, -8, 14, 16);
+      ctx.fillStyle = "#b45309";
+      ctx.fillRect(-7, -6, 14, 10);
+      ctx.fillStyle = "#d97706";
+      ctx.fillRect(-5, -5, 10, 5);
+      // Potato eyes & face
+      ctx.fillStyle = "#451a03";
+      ctx.fillRect(-5, -3, 2, 2);
+      ctx.fillRect(4, 1, 2, 2);
+      ctx.fillStyle = "#090d0a";
+      ctx.fillRect(-3, -1, 2, 2);
+      ctx.fillRect(2, -1, 2, 2);
+    } else if (pet.id === "chungo") {
+      // Chungo: Diglett-shaped piece of pink/white quartz
+      ctx.fillStyle = "#9d174d";
+      ctx.fillRect(-7, -10, 14, 18);
+      ctx.fillRect(-5, -12, 10, 2);
+      ctx.fillStyle = "#f472b6";
+      ctx.fillRect(-5, -10, 10, 16);
+      ctx.fillStyle = "#fbcfe8";
+      ctx.fillRect(-3, -9, 5, 10);
+      // Quartz base pebbles
+      ctx.fillStyle = "#6b7280";
+      ctx.fillRect(-9, 5, 18, 4);
+      // Diglett eyes & pink nose
+      ctx.fillStyle = "#090d0a";
+      ctx.fillRect(-3, -5, 2, 3);
+      ctx.fillRect(2, -5, 2, 3);
+      ctx.fillStyle = "#fb7185";
+      ctx.fillRect(-2, -1, 5, 3);
+    } else if (pet.id === "slab") {
+      // Slab: flat sturdy slab of rock
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(-12, -4, 24, 10);
+      ctx.fillStyle = "#64748b";
+      ctx.fillRect(-10, -3, 20, 7);
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillRect(-9, -3, 18, 3);
+      // Eyes
+      ctx.fillStyle = "#090d0a";
+      ctx.fillRect(-4, 0, 2, 2);
+      ctx.fillRect(3, 0, 2, 2);
+    } else if (pet.id === "grail") {
+      // Grail: hovering mini meteor with fiery tail
+      ctx.fillStyle = "#f97316";
+      ctx.fillRect(-12, -8, 6, 4);
+      ctx.fillRect(-10, -2, 5, 4);
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(-9, -6, 4, 4);
+      ctx.fillStyle = "#581c87";
+      ctx.fillRect(-6, -7, 14, 14);
+      ctx.fillRect(-4, -9, 10, 18);
+      ctx.fillStyle = "#9333ea";
+      ctx.fillRect(-4, -6, 10, 11);
+      ctx.fillStyle = "#e879f9";
+      ctx.fillRect(-2, -4, 5, 5);
+      // Glowing eyes
+      ctx.fillStyle = "#fef08a";
+      ctx.fillRect(-1, -1, 2, 2);
+      ctx.fillRect(4, -1, 2, 2);
+    }
+
+    ctx.font = "bold 9px 'Courier New', monospace";
+    ctx.fillStyle = pet.color;
+    ctx.textAlign = "center";
+    ctx.fillText(pet.name.toUpperCase(), 0, -16);
+
+    ctx.restore();
   }
 
   // Render Pixel-Art Surface Quarry
@@ -815,7 +1229,7 @@
       ctx.fillText("🌲", tree.x, tree.y);
     }
 
-    // 4. Camp NPCs (Hudson & Prospector Phil with 🕵️‍♂️ emoji)
+    // 4. Camp NPCs (Hudson & Prospector Phil)
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(28);
     ctx.fillText("🧑‍💼", TILE * 4.5, TILE * 1.5);
@@ -844,7 +1258,13 @@
       ctx.fillRect(Math.round(e.x) - 15, Math.round(e.y) - 21, Math.round(30 * (e.hp / e.maxHp)), 3);
     }
 
-    // 7. Player (Neil 🧒🏽, Xavier, or Carter) + Material-Colored Pixel Pickaxe
+    // 7. Equipped Quarry Pet Companion
+    const activePet = getActivePet();
+    if (activePet) {
+      drawEquippedPet(activePet, state.petPos.x, state.petPos.y);
+    }
+
+    // 8. Player (Neil 🧒🏽, Xavier, or Carter) + Material-Colored Pixel Pickaxe
     const p = state.player;
     const ch = getActiveChar();
     const pick = getActivePickaxe();
@@ -860,6 +1280,8 @@
 
     ctx.fillStyle = "#ffffff";
     ctx.font = EMOJI_FONT(30);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText(ch.avatar, 0, 0);
     ctx.globalAlpha = 1;
 
@@ -882,7 +1304,7 @@
 
     ctx.restore();
 
-    // 8. Square Pixel Particles & Floating Text
+    // 9. Square Pixel Particles & Floating Text
     for (const pt of state.particles) {
       ctx.fillStyle = pt.color;
       ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size);
@@ -929,6 +1351,7 @@
     state.touchVisible = !state.touchVisible;
     game.querySelector("#touchControls").classList.toggle("hidden", !state.touchVisible);
     e.currentTarget.innerHTML = `<span class="emoji-color">📱</span> Touch: ${state.touchVisible ? "ON" : "OFF"}`;
+    saveProgress();
   });
 
   // Touch D-Pad & Chop Listeners
@@ -960,16 +1383,17 @@
   touchChopBtn.addEventListener("touchstart", triggerTouchChop, { passive: false });
   touchChopBtn.addEventListener("mousedown", triggerTouchChop);
 
-  // Prospector Phil Dialogue Topics
+  // Prospector Phil Dialogue Topics (including Quarry Pets!)
   const philTips = {
-    rarities: "\"There are 11 rock tiers out here: Common, Uncommon, Rare, Epic, Mythic, Exotic, Secret, Divine, Galactic, Glitched, and Apex Purple! Galactic rocks glow cosmic indigo and drop 26x Gems, while Apex Purple drops 55x Gems!\"",
+    pets: "\"Smashing rocks can drop Quarry Eggs! Hatch them in the Pets tab to unlock 4 companions: Potato Rock (+15% Gold & Ores), Chungo the quartz Diglett (+Speed), Slab (+6 ATK & +35 HP), and Grail the mini meteor (+15 ATK & +25% Gold)!\"",
+    rarities: "\"There are 11 rock tiers out here: Common, Uncommon, Rare, Epic, Mythic, Exotic, Secret, Divine, Galactic, Glitched, and Apex Purple! Higher-tier rocks also have a much higher chance to drop Quarry Eggs!\"",
     materials: "\"Visit Hudson's Shop to upgrade your pickaxe material from Wood → Stone → Copper → Iron → Gold → Diamond → Obsidian → Mythril → Voidsteel → Celestial → Apex Purple Pickaxe!\"",
     zones: "\"Every quarry zone conceals a wooden ladder under one rock. Advance to deeper zones to boost your odds of uncovering Galactic, Glitched, and Apex Purple boulders!\"",
     crew: "\"All-Rounder Neil gets +30% Gold and ores, Xavier swings with extra power and HP to crack high-tier rocks fast, and Carter sprints across the quarry at top speed!\"",
     random: [
-      "\"Prospector Note #104: Playing on a phone or tablet? Use the on-screen D-Pad on the left to steer and tap the big CHOP button on the right!\"",
-      "\"Prospector Note #209: Check the TARGET readout in your right sidebar before swinging—it tells you the exact rarity and HP of the rock right in front of you!\"",
-      "\"Prospector Note #312: Higher-tier pickaxe materials change the color of the pickaxe blade right in your miner's hand!\""
+      "\"Prospector Note #104: Higher-rarity rocks like Mythic, Galactic, and Apex Purple almost always drop a Quarry Egg when shattered!\"",
+      "\"Prospector Note #209: Pair All-Rounder Neil (+30% loot) with Potato Rock (+15% loot) or Grail (+25% loot) for massive gold payouts at Hudson's Shop!\"",
+      "\"Prospector Note #312: Your progress, hatched pets, and upgrades save automatically in your browser whenever you collect loot or upgrade gear!\""
     ]
   };
 
@@ -992,6 +1416,7 @@
       game.querySelectorAll(".char-card").forEach((c) => c.classList.remove("selected"));
       card.classList.add("selected");
       state.selectedChar = card.dataset.char;
+      saveProgress();
     });
   });
 
@@ -999,10 +1424,11 @@
     game.querySelector("#titleScreen").classList.add("hidden");
     state.started = true;
     resizeCanvas();
-    applyCharacterStats(true);
+    applyCharacterStats(false);
     if (state.grid.length === 0) {
       generateFloor();
     }
+    saveProgress();
     addLog(`${getActiveChar().name} entered Pixel Quarry Zone ${state.floor}!`);
   });
 
@@ -1044,7 +1470,7 @@
     swingPickaxe();
   });
 
-  // Hudson Shop & Satchel Actions
+  // Hudson Shop, Hatchery & Save Actions
   function sellAllOres() {
     const earned = getSellValue();
     if (earned <= 0) return;
@@ -1054,11 +1480,22 @@
     state.gems = 0;
     game.querySelector("#hudsonSpeech").textContent = `"Pleasure doing business! Here's ${earned.toLocaleString()} gold. Ready to forge a stronger pickaxe material?"`;
     addLog(`Sold ores to Hudson for +${earned.toLocaleString()}G!`);
+    saveProgress();
     updateUI();
   }
 
   game.querySelector("#sellOresBtn").addEventListener("click", sellAllOres);
   game.querySelector("#hudsonSellBtn").addEventListener("click", sellAllOres);
+
+  game.querySelector("#hatchEggBtn").addEventListener("click", hatchEgg);
+  game.querySelector("#sideHatchBtn").addEventListener("click", hatchEgg);
+  game.querySelector("#unequipPetBtn").addEventListener("click", () => {
+    equipPet(null);
+    addLog("🐾 Unequipped pet companion.");
+  });
+
+  game.querySelector("#manualSaveBtn").addEventListener("click", () => saveProgress(true));
+  game.querySelector("#resetSaveBtn").addEventListener("click", resetProgress);
 
   game.querySelector("#upgPick").addEventListener("click", () => {
     const nextPick = PICKAXE_MATERIALS[state.pickTier + 1];
@@ -1067,6 +1504,7 @@
     state.pickTier += 1;
     game.querySelector("#hudsonSpeech").textContent = `"Fresh off the anvil! Your new ${nextPick.name} will tear right through rare formations!"`;
     addLog(`Forged ${nextPick.name}! Total ATK: ${getTotalAtk()}.`);
+    saveProgress();
     updateUI();
   });
 
@@ -1079,6 +1517,7 @@
     state.armorCost = Math.round(state.armorCost * 1.5);
     game.querySelector("#hudsonSpeech").textContent = `"Strapped and fitted! Max HP boosted to ${state.maxHp}."`;
     addLog(`Bought Reinforced Vest! Max HP: ${state.maxHp}.`);
+    saveProgress();
     updateUI();
   });
 
@@ -1089,6 +1528,7 @@
     state.bootsCost = Math.round(state.bootsCost * 1.55);
     game.querySelector("#hudsonSpeech").textContent = `"Light as a feather! You'll sprint across the quarry."`;
     addLog("Upgraded Trail Runner Boots!");
+    saveProgress();
     updateUI();
   });
 
@@ -1098,6 +1538,7 @@
     state.hp = Math.min(state.maxHp, state.hp + 60);
     game.querySelector("#hudsonSpeech").textContent = `"Bottoms up! Patching you right back to full strength."`;
     addLog("Drank Hudson's Med-Tonic (+60 HP).");
+    saveProgress();
     updateUI();
   });
 
@@ -1105,6 +1546,13 @@
     addLog(`Refreshed surface quarry for Zone ${state.floor}.`);
     generateFloor();
   });
+
+  // Load saved progress on startup
+  const loaded = loadProgress();
+  updateUI();
+  if (loaded) {
+    addLog(`💾 Loaded saved game (Zone ${state.floor}, LV.${state.level}, ${state.gold}G).`);
+  }
 
   loop();
 })();
