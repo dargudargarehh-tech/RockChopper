@@ -6,8 +6,9 @@
   <title>Rock Chopper</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Fine-tune these percentages if needed to match your screen aspect ratio */
     :root {
+      /* Adjust --img-zoom (e.g. 0.85 to 0.94) to zoom the title artwork in or out */
+      --img-zoom: 0.88;
       --char-grid-top: 52%;
       --enter-btn-top: 78%;
       --enter-btn-width: min(360px, 72vw);
@@ -23,6 +24,17 @@
       background: #070a10;
     }
 
+    /* Scales both the background image and the ENTER SMASHCENTER button together */
+    #titleArtLayer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: scale(var(--img-zoom));
+      transform-origin: center center;
+      z-index: 1;
+    }
+
     #titleBgImg {
       position: absolute;
       inset: 0;
@@ -33,14 +45,15 @@
       filter: brightness(1) !important;
       opacity: 1 !important;
       pointer-events: none;
-      z-index: 1;
+      -webkit-mask-image: radial-gradient(ellipse 96% 96% at 50% 50%, #000 88%, transparent 100%);
+      mask-image: radial-gradient(ellipse 96% 96% at 50% 50%, #000 88%, transparent 100%);
     }
 
     .title-vignette {
       display: none !important;
     }
 
-    /* Character Selection in the middle of the screen right under ROCK CHOPPER */
+    /* Character Selection locked in the exact same spot in the middle of the screen */
     #titleScreen .char-grid {
       position: absolute;
       left: 50%;
@@ -65,8 +78,8 @@
       line-height: 1.35;
     }
 
-    /* Invisible clickable hotspot aligned directly with the image's ENTER SMASHCENTER */
-    #titleScreen #startGameBtn {
+    /* Invisible clickable hotspot locked to the image's ENTER SMASHCENTER */
+    #titleArtLayer #startGameBtn {
       position: absolute;
       left: 50%;
       top: var(--enter-btn-top);
@@ -86,7 +99,7 @@
       transition: box-shadow 0.15s ease;
     }
 
-    #titleScreen #startGameBtn:hover {
+    #titleArtLayer #startGameBtn:hover {
       box-shadow: 0 0 22px rgba(250, 204, 21, 0.45) !important;
     }
 
@@ -107,7 +120,10 @@
   <div id="rock-chopper-game">
     <!-- TITLE SCREEN -->
     <div id="titleScreen">
-      <img id="titleBgImg" src="https://i.postimg.cc/c4P8hzbZ/Rock-Chopper-Crystal-Mine-Adventure.png" alt="Rock Chopper Crystal Mine Adventure" />
+      <div id="titleArtLayer">
+        <img id="titleBgImg" src="https://i.postimg.cc/c4P8hzbZ/Rock-Chopper-Crystal-Mine-Adventure.png" alt="Rock Chopper Crystal Mine Adventure" />
+        <button class="start-btn" id="startGameBtn" aria-label="Enter Smashcenter">ENTER SMASHCENTER</button>
+      </div>
       <div class="title-vignette"></div>
 
       <div class="char-grid">
@@ -138,8 +154,6 @@
           </div>
         </div>
       </div>
-
-      <button class="start-btn" id="startGameBtn" aria-label="Enter Smashcenter">ENTER SMASHCENTER</button>
     </div>
 
     <!-- PIXEL HUD & TOOLBAR -->
@@ -513,6 +527,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="script.js?v=7"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>
