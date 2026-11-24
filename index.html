@@ -6,9 +6,12 @@
   <title>Rock Chopper</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Adjust --play-btn-top (e.g. 64% to 72%) to fine-tune vertical alignment under "ENTER SMASHCENTER" */
+    /* Fine-tune these percentages if needed to match your screen aspect ratio */
     :root {
-      --play-btn-top: 66%;
+      --char-grid-top: 52%;
+      --enter-btn-top: 78%;
+      --enter-btn-width: min(360px, 72vw);
+      --enter-btn-height: 64px;
     }
 
     #titleScreen {
@@ -29,46 +32,30 @@
       object-position: center;
       filter: brightness(1) !important;
       opacity: 1 !important;
+      pointer-events: none;
+      z-index: 1;
     }
 
     .title-vignette {
       display: none !important;
     }
 
-    #titleScreen .title-content {
+    /* Character Selection in the middle of the screen right under ROCK CHOPPER */
+    #titleScreen .char-grid {
       position: absolute;
       left: 50%;
-      top: var(--play-btn-top);
-      transform: translateX(-50%);
-      width: min(860px, 94vw);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
+      top: var(--char-grid-top);
+      transform: translate(-50%, -50%);
+      width: min(860px, 92vw);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
       margin: 0;
-      padding: 0;
-      background: transparent !important;
       z-index: 5;
     }
 
-    #titleScreen #startGameBtn {
-      padding: 12px 44px;
-      font-size: 18px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.75);
-      cursor: pointer;
-    }
-
-    #titleScreen .char-grid {
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-    }
-
     #titleScreen .char-card {
-      padding: 8px 10px;
+      padding: 10px 12px;
       background: rgba(10, 14, 22, 0.84);
       backdrop-filter: blur(4px);
     }
@@ -78,9 +65,36 @@
       line-height: 1.35;
     }
 
+    /* Invisible clickable hotspot aligned directly with the image's ENTER SMASHCENTER */
+    #titleScreen #startGameBtn {
+      position: absolute;
+      left: 50%;
+      top: var(--enter-btn-top);
+      transform: translate(-50%, -50%);
+      width: var(--enter-btn-width);
+      height: var(--enter-btn-height);
+      padding: 0;
+      margin: 0;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: transparent !important;
+      font-size: 0 !important;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 6;
+      transition: box-shadow 0.15s ease;
+    }
+
+    #titleScreen #startGameBtn:hover {
+      box-shadow: 0 0 22px rgba(250, 204, 21, 0.45) !important;
+    }
+
     @media (max-width: 680px) {
       :root {
-        --play-btn-top: 60%;
+        --char-grid-top: 50%;
+        --enter-btn-top: 82%;
+        --enter-btn-height: 54px;
       }
       #titleScreen .char-grid {
         grid-template-columns: 1fr;
@@ -96,38 +110,36 @@
       <img id="titleBgImg" src="https://i.postimg.cc/c4P8hzbZ/Rock-Chopper-Crystal-Mine-Adventure.png" alt="Rock Chopper Crystal Mine Adventure" />
       <div class="title-vignette"></div>
 
-      <div class="title-content">
-        <button class="start-btn" id="startGameBtn">PLAY</button>
-
-        <div class="char-grid">
-          <div class="char-card selected" data-char="neil">
-            <div class="char-name">Neil</div>
-            <div class="char-role">All-Rounder</div>
-            <div class="char-stats">
-              110 HP &nbsp;|&nbsp; 6 ATK &nbsp;|&nbsp; Normal Speed<br>
-              <b>Perk:</b> +30% Gold &amp; extra ore drops from rare rocks
-            </div>
+      <div class="char-grid">
+        <div class="char-card selected" data-char="neil">
+          <div class="char-name">Neil</div>
+          <div class="char-role">All-Rounder</div>
+          <div class="char-stats">
+            110 HP &nbsp;|&nbsp; 6 ATK &nbsp;|&nbsp; Normal Speed<br>
+            <b>Perk:</b> +30% Gold &amp; extra ore drops from rare rocks
           </div>
+        </div>
 
-          <div class="char-card" data-char="xavier">
-            <div class="char-name">Xavier</div>
-            <div class="char-role">Heavy Crusher</div>
-            <div class="char-stats">
-              145 HP &nbsp;|&nbsp; 9 ATK &nbsp;|&nbsp; Steady Speed<br>
-              <b>Perk:</b> Crushes Galactic, Glitched &amp; Apex boulders faster
-            </div>
+        <div class="char-card" data-char="xavier">
+          <div class="char-name">Xavier</div>
+          <div class="char-role">Heavy Crusher</div>
+          <div class="char-stats">
+            145 HP &nbsp;|&nbsp; 9 ATK &nbsp;|&nbsp; Steady Speed<br>
+            <b>Perk:</b> Crushes Galactic, Glitched &amp; Apex boulders faster
           </div>
+        </div>
 
-          <div class="char-card" data-char="carter">
-            <div class="char-name">Carter</div>
-            <div class="char-role">Trailblazer Scout</div>
-            <div class="char-stats">
-              95 HP &nbsp;|&nbsp; 6 ATK &nbsp;|&nbsp; Fast Speed<br>
-              <b>Perk:</b> +35% Move Speed across the quarry &amp; parkour course
-            </div>
+        <div class="char-card" data-char="carter">
+          <div class="char-name">Carter</div>
+          <div class="char-role">Trailblazer Scout</div>
+          <div class="char-stats">
+            95 HP &nbsp;|&nbsp; 6 ATK &nbsp;|&nbsp; Fast Speed<br>
+            <b>Perk:</b> +35% Move Speed across the quarry &amp; parkour course
           </div>
         </div>
       </div>
+
+      <button class="start-btn" id="startGameBtn" aria-label="Enter Smashcenter">ENTER SMASHCENTER</button>
     </div>
 
     <!-- PIXEL HUD & TOOLBAR -->
@@ -501,6 +513,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>
