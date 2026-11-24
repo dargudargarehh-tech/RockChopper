@@ -5,16 +5,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Rock Chopper</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Adjust --play-btn-top (e.g. 64% to 72%) to fine-tune vertical alignment under "ENTER SMASHCENTER" */
+    :root {
+      --play-btn-top: 66%;
+    }
+
+    #titleScreen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #070a10;
+    }
+
+    #titleBgImg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(1) !important;
+      opacity: 1 !important;
+    }
+
+    .title-vignette {
+      display: none !important;
+    }
+
+    #titleScreen .title-content {
+      position: absolute;
+      left: 50%;
+      top: var(--play-btn-top);
+      transform: translateX(-50%);
+      width: min(860px, 94vw);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      background: transparent !important;
+      z-index: 5;
+    }
+
+    #titleScreen #startGameBtn {
+      padding: 12px 44px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.75);
+      cursor: pointer;
+    }
+
+    #titleScreen .char-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    #titleScreen .char-card {
+      padding: 8px 10px;
+      background: rgba(10, 14, 22, 0.84);
+      backdrop-filter: blur(4px);
+    }
+
+    #titleScreen .char-stats {
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 680px) {
+      :root {
+        --play-btn-top: 60%;
+      }
+      #titleScreen .char-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+  </style>
 </head>
 <body style="margin:0; background:#070a10;">
   <div id="rock-chopper-game">
-    <!-- TITLE SCREEN (NO ICONS) -->
+    <!-- TITLE SCREEN -->
     <div id="titleScreen">
-      <img id="titleBgImg" src="https://i.postimg.cc/fL1Xsmg1/Rock-Chopper-Crystal-Mining-Adventure.png" alt="Rock Chopper Crystal Mining Adventure" style="filter: brightness(1) !important; opacity: 1 !important;" />
-      <div class="title-vignette" style="display:none;"></div>
+      <img id="titleBgImg" src="https://i.postimg.cc/c4P8hzbZ/Rock-Chopper-Crystal-Mine-Adventure.png" alt="Rock Chopper Crystal Mine Adventure" />
+      <div class="title-vignette"></div>
 
       <div class="title-content">
-        <p class="title-sub">Choose your miner, harvest rare surface boulders across 11 rarity tiers, craft Smashcenter add-ons including the Parkour Course, complete Daily Challenges for XP, and battle Quarry Bosses.</p>
+        <button class="start-btn" id="startGameBtn">PLAY</button>
 
         <div class="char-grid">
           <div class="char-card selected" data-char="neil">
@@ -44,8 +127,6 @@
             </div>
           </div>
         </div>
-
-        <button class="start-btn" id="startGameBtn">ENTER SMASHCENTER</button>
       </div>
     </div>
 
@@ -420,6 +501,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>
