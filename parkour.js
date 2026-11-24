@@ -96,15 +96,27 @@ const EMOJI_FONT = (px) => `${px}px "Apple Color Emoji", "Segoe UI Emoji", "Noto
     if (window.__scParkourCleanup) window.__scParkourCleanup();
     window.__scParkourRewardClaimed = false;
 
-    const RUNNER = detectActiveMiner();
+   const RUNNER = detectActiveMiner();
+
+    // Cache the miner emoji onto an offscreen canvas once so mid-air rotation runs at 60 FPS
+    const avatarSprite = document.createElement("canvas");
+    avatarSprite.width = 64;
+    avatarSprite.height = 64;
+    const avCtx = avatarSprite.getContext("2d");
+    avCtx.font = EMOJI_FONT(44);
+    avCtx.textAlign = "center";
+    avCtx.textBaseline = "middle";
+    avCtx.fillText(RUNNER.avatar, 32, 34);
 
     // --- Procedural Web Audio Chiptune Synthesizer ---
     let audioCtx = null;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (_) {}
     let muted = false;
     const sfx = (freq, dur = 0.06, type = "square", vol = 0.06) => {
-      if (muted) return;
+      if (muted || !audioCtx) return;
       try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === "suspended") audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -253,10 +265,9 @@ const EMOJI_FONT = (px) => `${px}px "Apple Color Emoji", "Segoe UI Emoji", "Noto
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvas);
 
-    const GRAVITY = 0.92;
-    const JUMP_VEL = -14.6;
-    const MAX_FALL = 19.5;
-
+   const GRAVITY = 1.04;
+    const JUMP_VEL = -15.4;
+    const MAX_FALL = 21.0;
     let hiScore = Number(localStorage.getItem("scp_full_hi") || 0);
     hiEl.textContent = hiScore;
 
@@ -1008,18 +1019,14 @@ const EMOJI_FONT = (px) => `${px}px "Apple Color Emoji", "Segoe UI Emoji", "Noto
         }
       }
 
-     if (game.mode !== "DEATH") {
+ if (game.mode !== "DEATH") {
         const p = game.p;
         p.trail.forEach((t, idx) => {
           ctx.save();
           ctx.translate(t.x + p.w / 2, t.y + p.h / 2);
           ctx.rotate(t.rot);
-          ctx.globalAlpha = (idx + 1) * 0.045;
-          ctx.fillStyle = "#ffffff";
-          ctx.font = EMOJI_FONT(32);
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(RUNNER.avatar, 0, 0);
+          ctx.globalAlpha = (idx + 1) * 0.04;
+          ctx.drawImage(avatarSprite, -21, -21, 42, 42);
           ctx.restore();
         });
 
@@ -1027,11 +1034,7 @@ const EMOJI_FONT = (px) => `${px}px "Apple Color Emoji", "Segoe UI Emoji", "Noto
           ctx.save();
           ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
           ctx.rotate(p.rot);
-          ctx.fillStyle = "#ffffff";
-          ctx.font = EMOJI_FONT(34);
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(RUNNER.avatar, 0, 0);
+          ctx.drawImage(avatarSprite, -22, -22, 44, 44);
           ctx.restore();
         }
       }
