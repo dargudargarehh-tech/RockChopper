@@ -954,9 +954,13 @@
     pk.leapCooldown = 0;
   }
 
-  function enterParkourCourse() {
+ function enterParkourCourse() {
     if ((state.addons.parkour || 0) <= 0) {
       addLog("🔒 Build the Parkour Course Add-On first!");
+      return;
+    }
+    if (typeof window.launchSmashCenterParkour === "function") {
+      window.launchSmashCenterParkour();
       return;
     }
     state.parkour.savedQuarryPos = { x: state.player.x, y: state.player.y };
@@ -1001,7 +1005,9 @@
     state.gold += goldReward;
     gainXp(100);
 
-    exitParkourCourse(true);
+    if (state.parkour.active) {
+      exitParkourCourse(true);
+    }
     applyCharacterStats(false);
     spawnRockParticles(state.player.x, state.player.y, "#a3e635", 26);
 
@@ -1023,6 +1029,7 @@
     updateUI();
   }
 
+  window.grantRockChopperParkourRewards = handleParkourCompleted;
   function parkourLeap() {
     const pk = state.parkour;
     if (pk.leapTimer > 0 || pk.leapCooldown > 0) return;
