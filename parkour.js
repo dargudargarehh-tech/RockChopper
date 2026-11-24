@@ -1,47 +1,40 @@
 (() => {
   // Character presets synced to Rock Chopper's 3 miners
+const EMOJI_FONT = (px) => `${px}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+
   const MINER_PROFILES = {
     neil: {
       id: "neil",
+      avatar: "🧒🏽",
       label: "NEIL • ALL-ROUNDER",
       maxHp: 110,
       maxJumps: 2,
       airSpeed: 5.6,
-      scoreMult: 1.3, // +30% score perk
+      scoreMult: 1.3,
       bossDmg: 7,
-      primary: "#f59e0b",
-      trim: "#10b981",
-      skin: "#d99b66",
-      hair: "#451a03",
-      visor: "#fef08a"
+      primary: "#f59e0b"
     },
     xavier: {
       id: "xavier",
+      avatar: "🧑🏾‍🎤",
       label: "XAVIER • HEAVY CRUSHER",
-      maxHp: 145, // Heavy armor HP
+      maxHp: 145,
       maxJumps: 2,
       airSpeed: 5.0,
       scoreMult: 1.0,
-      bossDmg: 10, // Crushes bosses faster
-      primary: "#3b82f6",
-      trim: "#ef4444",
-      skin: "#8d5524",
-      hair: "#1e293b",
-      visor: "#38bdf8"
+      bossDmg: 10,
+      primary: "#3b82f6"
     },
     carter: {
       id: "carter",
+      avatar: "👱🏻‍♂️",
       label: "CARTER • TRAILBLAZER SCOUT",
       maxHp: 95,
       maxJumps: 2,
-      airSpeed: 7.4, // +35% air shift speed perk
+      airSpeed: 7.4,
       scoreMult: 1.1,
       bossDmg: 6,
-      primary: "#22c55e",
-      trim: "#a3e635",
-      skin: "#f1c27d",
-      hair: "#713f12",
-      visor: "#ffffff"
+      primary: "#22c55e"
     }
   };
 
@@ -745,7 +738,7 @@
         }
       }
 
-      p.rot = grounded ? Math.round(p.rot / (Math.PI / 2)) * (Math.PI / 2) : p.rot + 0.14 * game.speedMult;
+      p.rot = grounded ? Math.round(p.rot / (Math.PI * 2)) * (Math.PI * 2) : p.rot + 0.14 * game.speedMult;;
       p.trail.push({ x: p.x, y: p.y, rot: p.rot });
       if (p.trail.length > (game.speedMult > 1.2 ? 12 : 8)) p.trail.shift();
 
@@ -1015,15 +1008,18 @@
         }
       }
 
-      if (game.mode !== "DEATH") {
+     if (game.mode !== "DEATH") {
         const p = game.p;
         p.trail.forEach((t, idx) => {
           ctx.save();
           ctx.translate(t.x + p.w / 2, t.y + p.h / 2);
           ctx.rotate(t.rot);
           ctx.globalAlpha = (idx + 1) * 0.045;
-          ctx.fillStyle = RUNNER.primary;
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = EMOJI_FONT(32);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(RUNNER.avatar, 0, 0);
           ctx.restore();
         });
 
@@ -1031,7 +1027,11 @@
           ctx.save();
           ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
           ctx.rotate(p.rot);
-          drawMinerCube(ctx, p.w, RUNNER);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = EMOJI_FONT(34);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(RUNNER.avatar, 0, 0);
           ctx.restore();
         }
       }
